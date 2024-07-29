@@ -67,21 +67,24 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     spools_list = spools.split('\n')
     data = []
     for idx, spool in enumerate(spools_list, start=1):
-        sgs_row = sgs_df[sgs_df['Spool'] == spool].iloc[0] if not sgs_df[sgs_df['Spool'] == spool].empty else {}
-        data.append([
-            idx,
-            sgs_row.get('Área', ''),
-            spool,
-            '',  # Sheet
-            '',  # Size
-            '',  # Paint Code
-            '',  # REV.
-            '',  # Shop ID
-            '',  # Weight
-            sgs_row.get('Material', ''),
-            '',  # Material Status
-            ''   # Remarks
-        ])
+        if spool in sgs_df['Spool'].values:
+            sgs_row = sgs_df[sgs_df['Spool'] == spool].iloc[0]
+            data.append([
+                idx,
+                sgs_row.get('Área', ''),
+                spool,
+                '',  # Sheet
+                '',  # Size
+                '',  # Paint Code
+                '',  # REV.
+                '',  # Shop ID
+                '',  # Weight
+                sgs_row.get('Material', ''),
+                '',  # Material Status
+                ''   # Remarks
+            ])
+        else:
+            data.append([idx, '', spool, '', '', '', '', '', '', '', '', ''])
 
     # Add data to the worksheet
     row = 10
@@ -128,8 +131,12 @@ uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 if uploaded_file:
     # Read the "Spool" sheet starting from row 7, ignoring row 8
     sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=7)
-    sgs_df = sgs_df.drop(0)  # Drop row 8 which is the first row of the DataFrame after skiprows
+    sgs_df = sgs_df.iloc[1:].reset_index(drop=True)  # Drop row 8 which is the first row of the DataFrame after skiprows
 
-    if st.button('Generate Template'):
-        output = generate_template(jc_number, issue_date, area, spools, sgs_df)
-        st.download_button(label="Download Excel file", data=output, file_name=f'{jc_number}_template.xlsx', mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    # Ensure the 'Spool' column exists in the dataframe
+    if 'Spool' in sgs_df.columns:
+        if st.button('Generate Template'):
+            output = generate_template(jc_number, issue_date, area, spools, sgs_df)
+            st.download_button(label="Download Excel file", data=output, file_name=f'{jc_number}_template.xlsx', mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    else:
+        st.error("The uploaded Excel file does not contain a 'Spool' column in the 'Spool' sheet.")
