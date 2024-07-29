@@ -70,17 +70,17 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         sgs_row = sgs_df[sgs_df['Spool'] == spool].iloc[0] if not sgs_df[sgs_df['Spool'] == spool].empty else {}
         data.append([
             idx,
-            sgs_row.get('Area / WBS', ''),
+            sgs_row.get('Área', ''),
             spool,
-            sgs_row.get('Sheet', ''),
-            sgs_row.get('Size', ''),
-            sgs_row.get('Paint Code', ''),
-            sgs_row.get('REV.', ''),
-            sgs_row.get('Shop ID', ''),
-            sgs_row.get('Weight', ''),
-            sgs_row.get('Base Material', ''),
-            sgs_row.get('Material Status', ''),
-            sgs_row.get('Remarks', '')
+            '',  # Sheet
+            '',  # Size
+            '',  # Paint Code
+            '',  # REV.
+            '',  # Shop ID
+            '',  # Weight
+            sgs_row.get('Material', ''),
+            '',  # Material Status
+            ''   # Remarks
         ])
 
     # Add data to the worksheet
@@ -90,8 +90,8 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, item, cell_format)
         row += 1
 
-    # Calculate the total weight
-    total_weight = sum(item[8] for item in data if item[8])
+    # Calculate the total weight (assuming it's provided in the sgs_df)
+    total_weight = sum(float(item[8]) for item in data if item[8])
 
     # Add total weight and footer dynamically after the data
     footer_start = row
@@ -126,7 +126,10 @@ spools = st.text_area('Spools (one per line):')
 uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 
 if uploaded_file:
-    sgs_df = pd.read_excel(uploaded_file)
+    # Read the "Spool" sheet starting from row 7, ignoring row 8
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=7)
+    sgs_df = sgs_df.drop(0)  # Drop row 8 which is the first row of the DataFrame after skiprows
+
     if st.button('Generate Template'):
         output = generate_template(jc_number, issue_date, area, spools, sgs_df)
         st.download_button(label="Download Excel file", data=output, file_name=f'{jc_number}_template.xlsx', mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
