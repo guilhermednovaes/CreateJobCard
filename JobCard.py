@@ -67,8 +67,8 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     spools_list = spools.split('\n')
     data = []
     for idx, spool in enumerate(spools_list, start=1):
-        if spool in sgs_df['Spool'].values:
-            sgs_row = sgs_df[sgs_df['Spool'] == spool].iloc[0]
+        if spool in sgs_df['PF Code'].values:
+            sgs_row = sgs_df[sgs_df['PF Code'] == spool].iloc[0]
             data.append([
                 idx,
                 sgs_row.get('Área', ''),
@@ -133,10 +133,10 @@ if uploaded_file:
     sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=7)
     sgs_df = sgs_df.iloc[1:].reset_index(drop=True)  # Drop row 8 which is the first row of the DataFrame after skiprows
 
-    # Ensure the 'Spool' column exists in the dataframe
-    if 'Spool' in sgs_df.columns:
+    # Ensure the 'PF Code' column exists in the dataframe
+    if 'PF Code' in sgs_df.columns:
         if st.button('Generate Template'):
             output = generate_template(jc_number, issue_date, area, spools, sgs_df)
             st.download_button(label="Download Excel file", data=output, file_name=f'{jc_number}_template.xlsx', mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     else:
-        st.error("The uploaded Excel file does not contain a 'Spool' column in the 'Spool' sheet.")
+        st.error("The uploaded Excel file does not contain a 'PF Code' column in the 'Spool' sheet.")
