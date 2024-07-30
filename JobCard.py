@@ -127,35 +127,41 @@ def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username')
     password = st.text_input('Password', type='password')
+    login_success = False
     if st.button('Login'):
         if authenticate(username, password):
             st.session_state.authenticated = True
-            st.session_state.login_success = True
+            st.session_state.step = 2
+            st.experimental_set_query_params(step=2)
+            login_success = True
             st.success("Login successful")
         else:
             st.error('Invalid username or password')
     
-    if st.session_state.get('login_success'):
-        if st.button('Next'):
-            st.session_state.step = 2
-            st.experimental_set_query_params(step=2)
+    if login_success:
+        st.button('Next', on_click=next_step, args=(2,))
+
+def next_step(step):
+    st.session_state.step = step
+    st.experimental_set_query_params(step=step)
 
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
+    upload_success = False
     uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
     if uploaded_file is not None:
         sgs_df = process_excel_data(uploaded_file)
         if sgs_df is not None:
             st.session_state.sgs_df = sgs_df
             st.session_state.uploaded_file = uploaded_file
-            st.session_state.upload_success = True
-            st.success("File processed successfully.")
-    
-    if st.session_state.get('upload_success'):
-        if st.button('Next'):
             st.session_state.step = 3
             st.experimental_set_query_params(step=3)
+            upload_success = True
+            st.success("File processed successfully.")
+    
+    if upload_success:
+        st.button('Next', on_click=next_step, args=(3,))
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
