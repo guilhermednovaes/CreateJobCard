@@ -3,6 +3,7 @@ import pandas as pd
 import xlsxwriter
 from io import BytesIO
 import base64
+from datetime import datetime
 
 # Função para processar dados do Excel
 def process_excel_data(uploaded_file):
@@ -52,7 +53,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     worksheet.merge_range('A4:H4', f'JC Number : {jc_number}', merge_format)
     worksheet.merge_range('I4:L4', area, merge_format)
-    worksheet.merge_range('A5:H5', f'Issue Date :{issue_date}', merge_format)
+    worksheet.merge_range('A5:H5', f'Issue Date : {issue_date}', merge_format)
     
     worksheet.merge_range('A6:L6', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
     
@@ -124,6 +125,8 @@ if uploaded_file is not None:
     if sgs_df is not None:
         st.write("File processed successfully.")
         if st.button(f"Create Job Card ({jc_number})"):
-            excel_data = generate_template(jc_number, issue_date, area, spools, sgs_df)
+            # Formatação da data para DD/MM/YYYY
+            formatted_issue_date = issue_date.strftime('%d/%m/%Y')
+            excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
             st.markdown(get_table_download_link(excel_data, jc_number), unsafe_allow_html=True)
             st.stop()
