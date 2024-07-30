@@ -134,7 +134,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range(f'G{row+5}:L{row+5}', '', merge_format)
     
     worksheet.merge_range(f'A{row+6}:E{row+6}', '', merge_format)
-    worksheet.merge_range(f'F{row+6}:F{row+5}', '', merge_format)
+    worksheet.merge_range(f'F{row+6}:F{row+6}', '', merge_format)
     worksheet.merge_range(f'G{row+6}:L{row+6}', '', merge_format)
 
     worksheet.merge_range(f'A{row+7}:L{row+7}', '', merge_format)   
