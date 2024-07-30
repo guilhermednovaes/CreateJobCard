@@ -11,8 +11,9 @@ logging.basicConfig(level=logging.INFO)
 
 def authenticate(username, password):
     """Autentica o usuário utilizando variáveis de ambiente."""
-    if (username == os.getenv('USERNAME1') and password == os.getenv('PASSWORD1')) or \
-       (username == os.getenv('USERNAME2') and password == os.getenv('PASSWORD2')):
+    username = username.lower()  # Convertendo o login para minúsculas
+    if (username == os.getenv('USERNAME1').lower() and password == os.getenv('PASSWORD1')) or \
+       (username == os.getenv('USERNAME2').lower() and password == os.getenv('PASSWORD2')):
         return True
     return False
 
