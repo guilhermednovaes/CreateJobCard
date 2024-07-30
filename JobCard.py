@@ -12,7 +12,6 @@ def authenticate(username, password):
     username = username.lower()
     valid_users = [
         (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
-        (os.getenv('PASSWORD1', '')),
         (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', ''))
     ]
     return (username, password) in valid_users
@@ -47,28 +46,19 @@ def create_formats(workbook):
         'align': 'center',
         'valign': 'vcenter'})
 
-    wrap_format = workbook.add_format({
-        'border': 1,
-        'align': 'center',
-        'valign': 'vcenter',
-        'text_wrap': True})
-
-    return merge_format, header_format, cell_format, wrap_format
+    return merge_format, header_format, cell_format
 
 def generate_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
 
-    merge_format, header_format, cell_format, wrap_format = create_formats(workbook)
+    merge_format, header_format, cell_format = create_formats(workbook)
 
     # Definir as larguras das colunas
-    col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 9.140625, 'L': 13.140625}
+    col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 13.86, 'L': 13.140625}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width)
-
-    # Configurar a coluna K para quebrar texto automaticamente
-    worksheet.set_column('K:K', col_widths['K'], wrap_format)
 
     # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
