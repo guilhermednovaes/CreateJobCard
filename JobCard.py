@@ -110,7 +110,7 @@ spools = st.text_area("Spools (comma separated)")
 uploaded_file = st.file_uploader("Upload SGS Excel file", type=["xlsx"])
 if uploaded_file:
     sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool')
-    sgs_df.columns = sgs_df.iloc[0]
+    sgs_df.columns = sgs_df.iloc[0].str.strip()  # Clean the column names
     sgs_df = sgs_df[1:]
 
     st.write("Columns in the DataFrame:")
