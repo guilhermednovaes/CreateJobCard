@@ -131,7 +131,8 @@ uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 if uploaded_file:
     # Read the "Spool" sheet starting from row 7, ignoring row 8
     sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=7)
-    sgs_df = sgs_df.iloc[1:].reset_index(drop=True)  # Drop row 8 which is the first row of the DataFrame after skiprows
+    sgs_df.columns = sgs_df.iloc[0]  # Set the first row as column headers
+    sgs_df = sgs_df[1:].reset_index(drop=True)  # Drop the first row and reset index
 
     # Ensure the 'PF Code' column exists in the dataframe
     if 'PF Code' in sgs_df.columns:
