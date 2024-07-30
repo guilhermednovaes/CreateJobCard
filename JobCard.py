@@ -29,13 +29,13 @@ def process_excel_data(uploaded_file):
 
 def create_formats(workbook):
     merge_format = workbook.add_format({
-        'bold': 1,
+        'bold': True,
         'border': 1,
         'align': 'center',
         'valign': 'vcenter'})
 
     header_format = workbook.add_format({
-        'bold': 1,
+        'bold': True,
         'border': 1,
         'align': 'center',
         'valign': 'vcenter',
@@ -52,12 +52,12 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     merge_format, header_format, cell_format = create_formats(workbook)
 
-    worksheet.set_column('A:L', 15)
-    worksheet.set_row(0, 30)
-    worksheet.set_row(1, 30)
-    worksheet.set_row(2, 30)
+    worksheet.set_column('B:L', 20)
+    worksheet.set_row(0, 40)
+    worksheet.set_row(1, 40)
+    worksheet.set_row(2, 40)
     
-    worksheet.merge_range('B1:C1', 'PETROBRAS', merge_format)
+    worksheet.merge_range('B1:D1', 'PETROBRAS', merge_format)
     worksheet.merge_range('E1:F1', 'FPSO_P-82', merge_format)
     worksheet.merge_range('G1:H1', 'Request For Fabrication', merge_format)
     
