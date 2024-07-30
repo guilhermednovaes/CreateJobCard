@@ -78,13 +78,13 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
         data = [
             idx + 1,
-            sgs_row.get('Área', ''),
+            sgs_row.get('Módulo', ''),
             spool.strip(),
             '',
             sgs_row.get('Diam. Polegadas', ''),
-            '',
-            '',
-            '',
+            sgs_row.get('Condição Pintura', ''),
+            sgs_row.get('Rev. Isometrico', ''),
+            sgs_row.get('Dia Inch', ''),
             sgs_row.get('Peso (Kg)', 0),
             sgs_row.get('Material', ''),
             'Fully Issued',
@@ -112,11 +112,23 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     return output
 
-def generate_download_link(output, jc_number):
+def trigger_download(output, jc_number):
     val = output.getvalue()
     b64 = base64.b64encode(val).decode()
     href = f'data:application/octet-stream;base64,{b64}'
-    return href
+    download_link = f'<a href="{href}" download="JobCard_{jc_number}.xlsx"></a>'
+    st.markdown(download_link, unsafe_allow_html=True)
+    js = f"""
+    <script>
+    var element = document.createElement('a');
+    element.setAttribute('href', '{href}');
+    element.setAttribute('download', 'JobCard_{jc_number}.xlsx');
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    </script>
+    """
+    st.markdown(js, unsafe_allow_html=True)
 
 def login_page():
     st.title('Job Card Generator - Login')
@@ -164,9 +176,8 @@ def job_card_info_page():
         else:
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
-            download_link = generate_download_link(excel_data, jc_number)
-            st.markdown(f'<a href="{download_link}" download="JobCard_{jc_number}.xlsx">Download Job Card</a>', unsafe_allow_html=True)
             st.success("Job Card created successfully.")
+            trigger_download(excel_data, jc_number)
 
 def main():
     if 'step' not in st.session_state:
