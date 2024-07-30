@@ -52,33 +52,42 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     merge_format, header_format, cell_format = create_formats(workbook)
 
-    worksheet.set_column('B:M', 20)
-    worksheet.set_row(0, 60)
-    worksheet.set_row(1, 60)
-    worksheet.set_row(2, 60)
+    # Definir as larguras das colunas
+    col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 9.140625, 'L': 13.140625}
+    for col, width in col_widths.items():
+        worksheet.set_column(f'{col}:{col}', width)
     
-    worksheet.merge_range('B1:D3', '', merge_format)
+    # Definir as alturas das linhas antes e depois da tabela
+    header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
+    for row, height in header_footer_row_heights.items():
+        worksheet.set_row(row - 1, height)
+
+    # Definir a altura das linhas da tabela
+    for row in range(7, 137):
+        worksheet.set_row(row, 30)
+
+    worksheet.merge_range('A1:D3', '', merge_format)
     worksheet.merge_range('E1:H1', 'PETROBRAS', merge_format)
     worksheet.merge_range('E2:H2', 'FPSO_P-82', merge_format)
     worksheet.merge_range('E3:H3', 'Request For Fabrication', merge_format)
-    worksheet.merge_range('I1:M3', '', merge_format)
+    worksheet.merge_range('I1:L3', '', merge_format)
     
     # Inserção das Imagens
-    worksheet.insert_image('B1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
+    worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     
-    worksheet.merge_range('B4:F4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('H4:M4', f'Area : {area}', merge_format)
-    worksheet.merge_range('B5:F5', f'Issue Date : {issue_date}', merge_format)
-    worksheet.merge_range('H5:M5', f'', merge_format)
+    worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
+    worksheet.merge_range('I4:L4', f'Area : {area}', merge_format)
+    worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
+    worksheet.merge_range('I5:L5', '', merge_format)
 
-    worksheet.merge_range('B7:M7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
+    worksheet.merge_range('A7:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
     
     headers = ['No.', 'Area / WBS', 'Spool', 'Sheet', 'Size', 'Paint Code', 'REV.', 'Shop ID', 'Weight', 'Base Material', 'Material Status', 'Remarks']
-    worksheet.write_row('B8', headers, header_format)
+    worksheet.write_row('A8', headers, header_format)
     
     row = 8
-    col = 1
+    col = 0
     total_weight = 0
     spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
     for idx, spool in enumerate(spools_list):
@@ -101,18 +110,18 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, data, cell_format)
         row += 1
     
-    worksheet.merge_range(f'B{row+1}:C{row+1}', 'Total Weight: (Kg)', merge_format)
-    worksheet.write(f'D{row+1}', total_weight, merge_format)
+    worksheet.merge_range(f'A{row+1}:B{row+1}', 'Total Weight: (Kg)', merge_format)
+    worksheet.write(f'C{row+1}', total_weight, merge_format)
     
-    worksheet.merge_range(f'B{row+2}:D{row+2}', 'Prepared by', merge_format)
-    worksheet.merge_range(f'E{row+2}:G{row+2}', 'Approved by', merge_format)
-    worksheet.merge_range(f'H{row+2}:J{row+2}', 'Received', merge_format)
+    worksheet.merge_range(f'A{row+2}:C{row+2}', 'Prepared by', merge_format)
+    worksheet.merge_range(f'D{row+2}:F{row+2}', 'Approved by', merge_format)
+    worksheet.merge_range(f'G{row+2}:I{row+2}', 'Received', merge_format)
     
-    worksheet.merge_range(f'B{row+3}:D{row+3}', 'Piping Engg.', merge_format)
-    worksheet.merge_range(f'E{row+3}:G{row+3}', 'J/C Co-Ordinator', merge_format)
-    worksheet.merge_range(f'H{row+3}:J{row+3}', 'Spooling Vendor : EJA', merge_format)
+    worksheet.merge_range(f'A{row+3}:C{row+3}', 'Piping Engg.', merge_format)
+    worksheet.merge_range(f'D{row+3}:F{row+3}', 'J/C Co-Ordinator', merge_format)
+    worksheet.merge_range(f'G{row+3}:I{row+3}', 'Spooling Vendor : EJA', merge_format)
     
-    worksheet.merge_range(f'B{row+4}:J{row+4}', 'CC', merge_format)
+    worksheet.merge_range(f'A{row+4}:I{row+4}', 'CC', merge_format)
     
     workbook.close()
     output.seek(0)
