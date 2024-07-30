@@ -138,9 +138,6 @@ def main():
                 st.session_state.authenticated = True
                 st.session_state.step = 2
                 st.success('Login successful')
-                st.experimental_rerun()
-            else:
-                st.error('Invalid username or password')
     
     if st.session_state.authenticated and st.session_state.step == 2:
         st.title('Job Card Generator')
@@ -153,7 +150,6 @@ def main():
                 st.session_state.uploaded_file = uploaded_file
                 st.session_state.step = 3
                 st.success("File processed successfully.")
-                st.experimental_rerun()
     
     if st.session_state.authenticated and st.session_state.step == 3:
         sgs_df = st.session_state.sgs_df
