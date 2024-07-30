@@ -6,10 +6,9 @@ import base64
 
 # Função para processar dados do Excel
 def process_excel_data(uploaded_file):
-    df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=0).dropna(how='all')
-    df_spool.columns = df_spool.iloc[0]  # Define a primeira linha como cabeçalho
-    df_spool = df_spool[1:]  # Ignora a primeira linha
-    df_spool = df_spool.dropna(how='all').reset_index(drop=True)  # Remove linhas vazias
+    df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
+    df_spool = df_spool.iloc[1:]  # Ignorar a primeira linha
+    df_spool = df_spool.reset_index(drop=True)  # Resetar índice
     return df_spool
 
 # Função para gerar o arquivo Excel do Job Card
