@@ -176,8 +176,8 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     merge_format, header_format, cell_format = create_formats(workbook)
 
-    # Definir as larguras das colunas
-    col_widths = {'A': 25, 'B': 10, 'C': 15, 'D': 15, 'E': 10, 'F': 40, 'G': 15, 'H': 15, 'I': 10, 'J': 10, 'K': 10, 'L': 15}
+    # Definir as larguras das colunas específicas
+    col_widths = {'A': 35.5703125, 'B': 13.0, 'C': 22.28515625, 'D': 9.140625, 'E': 13.0, 'F': 46.42578125, 'G': 9.140625, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width)
 
@@ -373,6 +373,13 @@ def job_card_info_page():
                 file_name=f"JobCard_{jc_number}_Material.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 key='download_material'
+            )
+            st.download_button(
+                label="Download Both Job Cards",
+                data=(spools_excel.getvalue(), material_excel.getvalue()),
+                file_name=f"JobCard_{jc_number}_Both.zip",
+                mime="application/zip",
+                key='download_both'
             )
 
 if __name__ == "__main__":
