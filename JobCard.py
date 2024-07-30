@@ -69,10 +69,10 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     for row in range(7, 137):
         worksheet.set_row(row, 30)
 
-    worksheet.merge_range('A1:D3', '', merge_format)
-    worksheet.merge_range('E1:H1', 'PETROBRAS', merge_format)
-    worksheet.merge_range('E2:H2', 'FPSO_P-82', merge_format)
-    worksheet.merge_range('E3:H3', 'Request For Fabrication', merge_format)
+    worksheet.merge_range('A1:C3', '', merge_format)
+    worksheet.merge_range('D1:H1', 'PETROBRAS', merge_format)
+    worksheet.merge_range('D2:H2', 'FPSO_P-82', merge_format)
+    worksheet.merge_range('D3:H3', 'Request For Fabrication', merge_format)
     worksheet.merge_range('I1:L3', '', merge_format)
 
     # Inserção das Imagens
@@ -80,9 +80,10 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
 
     worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('G4:L4', f'Area : {area}', merge_format)
+    worksheet.merge_range('G4:L4', {area}, merge_format)
+    worksheet.merge_range('E4:F4', '', merge_format)
     worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
-    worksheet.merge_range('E5:H5', '', merge_format)
+    worksheet.merge_range('E5:F5', '', merge_format)
 
     worksheet.merge_range('A6:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
 
@@ -120,9 +121,13 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range(f'C{row+2}:D{row+2}', 'Approved by', merge_format)
     worksheet.merge_range(f'F{row+2}:L{row+2}', 'Received', merge_format)
 
-    worksheet.merge_range(f'A{row+3}:B{row+3}', 'Piping Engg.', merge_format)
-    worksheet.merge_range(f'C{row+3}:D{row+3}', 'J/C Co-Ordinator', merge_format)
-    worksheet.merge_range(f'G{row+3}:L{row+3}', 'Spooling Vendor : EJA', merge_format)
+    worksheet.merge_range(f'A{row+3}:B{row+3}', '', merge_format)
+    worksheet.merge_range(f'C{row+3}:D{row+3}', '', merge_format)
+    worksheet.merge_range(f'F{row+3}:L{row+3}', '', merge_format)
+    
+    worksheet.merge_range(f'A{row+4}:B{row+4}', 'Piping Engg.', merge_format)
+    worksheet.merge_range(f'C{row+4}:D{row+4}', 'J/C Co-Ordinator', merge_format)
+    worksheet.merge_range(f'G{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
 
     worksheet.write(f'F{row+4}', 'CC', merge_format)
 
