@@ -56,7 +56,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     col = 0
     total_weight = 0
     for i, spool in enumerate(spools.split(',')):
-        sgs_row = sgs_df[sgs_df['PF Code'] == spool].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool].empty else {}
+        sgs_row = sgs_df[sgs_df['PF Code'].str.strip() == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'].str.strip() == spool.strip()].empty else {}
         data = [
             i + 1,
             sgs_row.get('Área', ''),
@@ -109,9 +109,9 @@ spools = st.text_area("Spools (comma separated)")
 
 uploaded_file = st.file_uploader("Upload SGS Excel file", type=["xlsx"])
 if uploaded_file:
-    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool')
-    sgs_df.columns = sgs_df.iloc[0].str.strip()  # Clean the column names
-    sgs_df = sgs_df[1:]
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=1)
+    sgs_df.columns = sgs_df.columns.str.strip()  # Clean the column names
+    sgs_df = sgs_df.dropna(how="all").reset_index(drop=True)  # Remove empty rows
 
     st.write("Columns in the DataFrame:")
     st.write(sgs_df.columns.tolist())
