@@ -103,10 +103,11 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     return output
 
 # Função para permitir download do arquivo gerado
-def get_table_download_link(output, jc_number):
+def generate_download_link(output, jc_number):
     val = output.getvalue()
-    b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+    b64 = base64.b64encode(val).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+    return href
 
 # Streamlit UI
 st.title('Job Card Generator')
@@ -128,5 +129,6 @@ if uploaded_file is not None:
             # Formatação da data para DD/MM/YYYY
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
-            st.markdown(get_table_download_link(excel_data, jc_number), unsafe_allow_html=True)
+            download_link = generate_download_link(excel_data, jc_number)
+            st.markdown(download_link, unsafe_allow_html=True)
             st.stop()
