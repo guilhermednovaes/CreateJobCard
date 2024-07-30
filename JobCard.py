@@ -52,29 +52,29 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     merge_format, header_format, cell_format = create_formats(workbook)
 
-    worksheet.set_column('B:L', 20)
+    worksheet.set_column('B:M', 20)
     worksheet.set_row(0, 40)
     worksheet.set_row(1, 40)
     worksheet.set_row(2, 40)
     
     worksheet.merge_range('B1:D1', 'PETROBRAS', merge_format)
-    worksheet.merge_range('E1:F1', 'FPSO_P-82', merge_format)
-    worksheet.merge_range('G1:H1', 'Request For Fabrication', merge_format)
+    worksheet.merge_range('E1:H1', 'FPSO_P-82', merge_format)
+    worksheet.merge_range('I1:M1', 'Request For Fabrication', merge_format)
     
     # Inserção das Imagens
     worksheet.insert_image('B1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
-    worksheet.insert_image('G1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
+    worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     
-    worksheet.merge_range('B4:H4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('B5:H5', f'Issue Date : {issue_date}', merge_format)
-    worksheet.merge_range('I4:L4', area, merge_format)
+    worksheet.merge_range('B4:M4', f'JC Number : {jc_number}', merge_format)
+    worksheet.merge_range('B5:M5', f'Issue Date : {issue_date}', merge_format)
+    worksheet.merge_range('B6:M6', f'Area : {area}', merge_format)
     
-    worksheet.merge_range('B6:L6', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
+    worksheet.merge_range('B7:M7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
     
     headers = ['No.', 'Area / WBS', 'Spool', 'Sheet', 'Size', 'Paint Code', 'REV.', 'Shop ID', 'Weight', 'Base Material', 'Material Status', 'Remarks']
-    worksheet.write_row('B7', headers, header_format)
+    worksheet.write_row('B8', headers, header_format)
     
-    row = 7
+    row = 8
     col = 1
     total_weight = 0
     spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
