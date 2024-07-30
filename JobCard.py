@@ -5,7 +5,6 @@ from io import BytesIO
 import base64
 import logging
 import os
-import time
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -131,12 +130,15 @@ def login_page():
     if st.button('Login'):
         if authenticate(username, password):
             st.session_state.authenticated = True
-            st.session_state.step = 2
+            st.session_state.login_success = True
             st.success("Login successful")
-            time.sleep(1)  # Adiciona um atraso para permitir que a mensagem de sucesso seja vista
-            st.experimental_set_query_params(step=2)
         else:
             st.error('Invalid username or password')
+    
+    if st.session_state.get('login_success'):
+        if st.button('Next'):
+            st.session_state.step = 2
+            st.experimental_set_query_params(step=2)
 
 def upload_page():
     st.title('Job Card Generator')
@@ -147,9 +149,12 @@ def upload_page():
         if sgs_df is not None:
             st.session_state.sgs_df = sgs_df
             st.session_state.uploaded_file = uploaded_file
-            st.session_state.step = 3
+            st.session_state.upload_success = True
             st.success("File processed successfully.")
-            time.sleep(1)  # Adiciona um atraso para permitir que a mensagem de sucesso seja vista
+    
+    if st.session_state.get('upload_success'):
+        if st.button('Next'):
+            st.session_state.step = 3
             st.experimental_set_query_params(step=3)
 
 def job_card_info_page():
