@@ -116,8 +116,9 @@ def trigger_download(output, jc_number):
     val = output.getvalue()
     b64 = base64.b64encode(val).decode()
     href = f'data:application/octet-stream;base64,{b64}'
+    download_link = f'<a id="download_link" href="{href}" download="JobCard_{jc_number}.xlsx"></a>'
+    st.markdown(download_link, unsafe_allow_html=True)
     js = f"""
-    <a id="download_link" href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx"></a>
     <script>
     document.getElementById('download_link').click();
     </script>
