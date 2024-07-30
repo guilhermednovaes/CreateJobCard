@@ -84,6 +84,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range('E4:F4', '', merge_format)
     worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
     worksheet.merge_range('E5:F5', '', merge_format)
+    worksheet.merge_range('G5:L5', '', merge_format)
 
     worksheet.merge_range('A6:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
 
@@ -130,7 +131,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range(f'E{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
    
     worksheet.merge_range(f'A{row+5}:E{row+5}', '', merge_format)
-    worksheet.merge_range(f'F{row+5}:F{row+5}', 'CC', merge_format)
+    worksheet.write(f'F{row+5}', 'CC', merge_format)
     worksheet.merge_range(f'G{row+5}:L{row+5}', '', merge_format)
     
     worksheet.merge_range(f'A{row+6}:E{row+6}', '', merge_format)
