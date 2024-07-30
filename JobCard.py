@@ -76,8 +76,8 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range('I1:L3', '', merge_format)
 
     # Inserção das Imagens
-    worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 30, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
-    worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 30, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
+    worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 30, 'y_offset': 15, 'x_scale': 1, 'y_scale': 1})
+    worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 30, 'y_offset': 15, 'x_scale': 1, 'y_scale': 1})
 
     worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
     worksheet.merge_range('G4:L4', f'Area : {area}', merge_format)
