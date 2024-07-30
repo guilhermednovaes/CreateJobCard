@@ -6,9 +6,10 @@ import base64
 
 # Função para processar dados do Excel
 def process_excel_data(uploaded_file):
-    df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
-    df_spool = df_spool.iloc[1:]  # Ignorar a primeira linha
-    df_spool = df_spool.reset_index(drop=True)  # Resetar índice
+    df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=0).dropna(how='all')
+    df_spool.columns = df_spool.iloc[0]  # Define a primeira linha como cabeçalho
+    df_spool = df_spool[1:]  # Ignora a primeira linha
+    df_spool = df_spool.dropna(how='all').reset_index(drop=True)  # Remove linhas vazias
     return df_spool
 
 # Função para gerar o arquivo Excel do Job Card
@@ -62,7 +63,8 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     row = 7
     col = 0
     total_weight = 0
-    for idx, spool in enumerate(spools.split(',')):
+    spools_list = spools.split('\n')
+    for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
         data = [
             idx + 1,
@@ -115,7 +117,7 @@ st.title('Job Card Generator')
 jc_number = st.text_input('JC Number')
 issue_date = st.date_input('Issue Date')
 area = st.text_input('Area')
-spools = st.text_area('Spool\'s (comma-separated)')
+spools = st.text_area('Spool\'s (one per line)')
 
 # Upload do arquivo Excel
 uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
@@ -126,3 +128,4 @@ if uploaded_file is not None:
     if st.button(f"Create Job Card ({jc_number})"):
         excel_data = generate_template(jc_number, issue_date, area, spools, sgs_df)
         st.markdown(get_table_download_link(excel_data, jc_number), unsafe_allow_html=True)
+        st.stop()  # Para evitar que o botão seja clicado duas vezes
