@@ -122,27 +122,28 @@ def generate_download_link(output, jc_number):
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
     return href
 
-# Autenticação do usuário
-st.title('Job Card Generator - Login')
-username = st.text_input('Username')
-password = st.text_input('Password', type='password')
+def main():
+    if 'step' not in st.session_state:
+        st.session_state.step = 1
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    
+    if st.session_state.step == 1:
+        st.title('Job Card Generator - Login')
+        username = st.text_input('Username')
+        password = st.text_input('Password', type='password')
 
-if st.button('Login'):
-    if authenticate(username, password):
-        st.session_state['authenticated'] = True
-        st.success('Login successful')
-    else:
-        st.error('Invalid username or password')
-
-if 'authenticated' in st.session_state and st.session_state['authenticated']:
-    # Streamlit UI
-    st.title('Job Card Generator')
-
-    # Página 1: Carregar arquivo SGS
-    if 'uploaded_file' not in st.session_state:
-        st.session_state.uploaded_file = None
-
-    if st.session_state.uploaded_file is None:
+        if st.button('Login'):
+            if authenticate(username, password):
+                st.session_state.authenticated = True
+                st.session_state.step = 2
+                st.success('Login successful')
+                st.experimental_rerun()
+            else:
+                st.error('Invalid username or password')
+    
+    if st.session_state.authenticated and st.session_state.step == 2:
+        st.title('Job Card Generator')
         st.header("Upload SGS Excel file")
         uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
         if uploaded_file is not None:
@@ -150,13 +151,13 @@ if 'authenticated' in st.session_state and st.session_state['authenticated']:
             if sgs_df is not None:
                 st.session_state.sgs_df = sgs_df
                 st.session_state.uploaded_file = uploaded_file
+                st.session_state.step = 3
                 st.success("File processed successfully.")
-                if st.button("Next"):
-                    st.experimental_rerun()
-    else:
+                st.experimental_rerun()
+    
+    if st.session_state.authenticated and st.session_state.step == 3:
         sgs_df = st.session_state.sgs_df
-
-        # Página 2: Adicionar informações e gerar relatório
+        st.title('Job Card Generator')
         st.header("Job Card Information")
         jc_number = st.text_input('JC Number')
         issue_date = st.date_input('Issue Date')
@@ -179,5 +180,6 @@ if 'authenticated' in st.session_state and st.session_state['authenticated']:
                 
                 # Exibir link de download
                 st.markdown(download_link, unsafe_allow_html=True)
-else:
-    st.warning('Please login to use the application.')
+
+if __name__ == "__main__":
+    main()
