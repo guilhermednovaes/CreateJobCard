@@ -132,12 +132,12 @@ if uploaded_file:
     # Read the "Spool" sheet starting from row 9
     sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=9)
     
-    # Manually set the column names
-    sgs_df.columns = [
-        'Module', 'Area', 'Document Number', 'Line Number', 'Isometric', 'Spool', 'PF Code',
-        'Hold', 'Hold Date', 'DCN', 'Isometric Revision', 'P-Number', 'Material', 'Tube Material', 'More Columns...'
-    ]
-    sgs_df = sgs_df[1:].reset_index(drop=True)  # Adjust the DataFrame by removing the first row and resetting the index
+    # Manually inspect the columns and set them correctly
+    sgs_df.columns = sgs_df.iloc[0]  # Set the first row as column headers
+    sgs_df = sgs_df[1:].reset_index(drop=True)  # Remove the first row and reset the index
+
+    # Display the DataFrame columns for debugging
+    st.write("Columns in the DataFrame:", sgs_df.columns)
 
     # Ensure the 'PF Code' column exists in the dataframe
     if 'PF Code' in sgs_df.columns:
