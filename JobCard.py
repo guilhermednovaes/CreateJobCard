@@ -12,7 +12,8 @@ def authenticate(username, password):
     username = username.lower()
     valid_users = [
         (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
-        (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', ''))
+        (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', '')),
+        (os.getenv('USERNAME3', '').lower(), os.getenv('PASSWORD3', ''))
     ]
     return (username, password) in valid_users
 
