@@ -41,22 +41,25 @@ def create_formats(workbook):
         'valign': 'vcenter',
         'bg_color': '#D3D3D3'})
 
-    cell_format = workbook.add_format({'border': 1})
-    
+    cell_format = workbook.add_format({
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter'})
+
     return merge_format, header_format, cell_format
 
 def generate_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
-    
+
     merge_format, header_format, cell_format = create_formats(workbook)
 
     # Definir as larguras das colunas
     col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 9.140625, 'L': 13.140625}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width)
-    
+
     # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
     for row, height in header_footer_row_heights.items():
@@ -71,21 +74,21 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range('E2:H2', 'FPSO_P-82', merge_format)
     worksheet.merge_range('E3:H3', 'Request For Fabrication', merge_format)
     worksheet.merge_range('I1:L3', '', merge_format)
-    
+
     # Inserção das Imagens
     worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
-    
+
     worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('E4:H4', f'Area : {area}', merge_format)
+    worksheet.merge_range('G4:L4', f'Area : {area}', merge_format)
     worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
     worksheet.merge_range('E5:H5', '', merge_format)
 
     worksheet.merge_range('A6:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
-    
+
     headers = ['No.', 'Area / WBS', 'Spool', 'Sheet', 'Size', 'Paint Code', 'REV.', 'Shop ID', 'Weight', 'Base Material', 'Material Status', 'Remarks']
     worksheet.write_row('A8', headers, header_format)
-    
+
     row = 8
     col = 0
     total_weight = 0
@@ -109,23 +112,23 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         total_weight += sgs_row.get('Peso (Kg)', 0)
         worksheet.write_row(row, col, data, cell_format)
         row += 1
-    
+
     worksheet.merge_range(f'A{row+1}:F{row+1}', 'Total Weight: (Kg)', merge_format)
     worksheet.merge_range(f'G{row+1}:L{row+1}', total_weight, merge_format)
-    
+
     worksheet.merge_range(f'A{row+2}:B{row+2}', 'Prepared by', merge_format)
     worksheet.merge_range(f'C{row+2}:D{row+2}', 'Approved by', merge_format)
     worksheet.merge_range(f'F{row+2}:L{row+2}', 'Received', merge_format)
-    
+
     worksheet.merge_range(f'A{row+3}:B{row+3}', 'Piping Engg.', merge_format)
     worksheet.merge_range(f'C{row+3}:D{row+3}', 'J/C Co-Ordinator', merge_format)
     worksheet.merge_range(f'G{row+3}:L{row+3}', 'Spooling Vendor : EJA', merge_format)
-    
-    worksheet.merge_range(f'F{row+4}:F{row+4}', 'CC', merge_format)
-    
+
+    worksheet.write(f'F{row+4}', 'CC', merge_format)
+
     workbook.close()
     output.seek(0)
-    
+
     return output
 
 def main():
