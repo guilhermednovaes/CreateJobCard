@@ -13,8 +13,8 @@ def authenticate(username, password):
     """Autentica o usuário utilizando variáveis de ambiente."""
     username = username.lower()  # Convertendo o login para minúsculas
     valid_users = [
-        (os.getenv('USERNAME1').lower(), os.getenv('PASSWORD1')),
-        (os.getenv('USERNAME2').lower(), os.getenv('PASSWORD2'))
+        (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
+        (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', ''))
     ]
     return (username, password) in valid_users
 
@@ -138,7 +138,7 @@ def main():
             if authenticate(username, password):
                 st.session_state.authenticated = True
                 st.session_state.step = 2
-                st.success('Login successful')
+                st.experimental_rerun()
             else:
                 st.error('Invalid username or password')
     
@@ -152,7 +152,7 @@ def main():
                 st.session_state.sgs_df = sgs_df
                 st.session_state.uploaded_file = uploaded_file
                 st.session_state.step = 3
-                st.success("File processed successfully.")
+                st.experimental_rerun()
     
     if st.session_state.authenticated and st.session_state.step == 3:
         sgs_df = st.session_state.sgs_df
