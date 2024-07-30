@@ -42,27 +42,22 @@ def create_formats(workbook):
         'valign': 'vcenter',
         'bg_color': '#D3D3D3'})
 
-    cell_format = workbook.add_format({
-        'border': 1,
-        'align': 'center',
-        'valign': 'vcenter'})
-
     cell_wrap_format = workbook.add_format({
         'border': 1,
         'align': 'center',
         'valign': 'vcenter',
         'text_wrap': True})
 
-    return merge_format, header_format, cell_format, cell_wrap_format
+    return merge_format, header_format, cell_wrap_format
 
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
 
-    merge_format, header_format, cell_format, cell_wrap_format = create_formats(workbook)
+    merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    # Definir as larguras das colunas
+    # Definir as larguras das colunas e ativar quebra de texto
     col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 13.86, 'L': 13.140625}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
@@ -130,7 +125,7 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
             ''
         ]
         total_weight += weight
-        worksheet.write_row(row, col, data, cell_format)
+        worksheet.write_row(row, col, data, cell_wrap_format)
         row += 1
 
     # Definir a altura das linhas da tabela e do cabeçalho
@@ -180,7 +175,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
 
-    merge_format, header_format, cell_format, cell_wrap_format = create_formats(workbook)
+    merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
     # Definir as larguras das colunas específicas
     col_widths = {'A': 35.5703125, 'B': 13.0, 'C': 22.28515625, 'D': 9.140625, 'E': 13.0, 'F': 46.42578125, 'G': 9.140625, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
@@ -245,7 +240,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
             '',
             ''
         ]
-        worksheet.write_row(row, col, data, cell_format)
+        worksheet.write_row(row, col, data, cell_wrap_format)
         row += 1
 
     # Definir a altura das linhas da tabela e do cabeçalho
@@ -312,6 +307,8 @@ def main():
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
             job_card_info_page()
+    elif st.session_state.step == 4:
+        download_page()
 
 def login_page():
     st.title('Job Card Generator - Login')
@@ -365,21 +362,28 @@ def job_card_info_page():
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df, st.session_state.spools)
+            st.session_state.spools_excel = spools_excel
+            st.session_state.material_excel = material_excel
             st.success("Job Cards created successfully.")
-            st.download_button(
-                label="Download Job Card Spools",
-                data=spools_excel.getvalue(),
-                file_name=f"JobCard_{jc_number}_Spools.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key='download_spools'
-            )
-            st.download_button(
-                label="Download Job Card Material",
-                data=material_excel.getvalue(),
-                file_name=f"JobCard_{jc_number}_Material.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key='download_material'
-            )
+            st.session_state.step = 4
+            st.experimental_set_query_params(step=4)
+
+def download_page():
+    st.title('Job Card Generator - Download')
+    st.download_button(
+        label="Download Job Card Spools",
+        data=st.session_state.spools_excel.getvalue(),
+        file_name=f"JobCard_{jc_number}_Spools.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key='download_spools'
+    )
+    st.download_button(
+        label="Download Job Card Material",
+        data=st.session_state.material_excel.getvalue(),
+        file_name=f"JobCard_{jc_number}_Material.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key='download_material'
+    )
 
 if __name__ == "__main__":
     main()
