@@ -123,60 +123,68 @@ def generate_download_link(output, jc_number):
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
     return href
 
+def login_page():
+    st.title('Job Card Generator - Login')
+    username = st.text_input('Username')
+    password = st.text_input('Password', type='password')
+    if st.button('Login'):
+        if authenticate(username, password):
+            st.session_state.authenticated = True
+            st.session_state.step = 2
+        else:
+            st.error('Invalid username or password')
+
+def upload_page():
+    st.title('Job Card Generator')
+    st.header("Upload SGS Excel file")
+    uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+    if uploaded_file is not None:
+        sgs_df = process_excel_data(uploaded_file)
+        if sgs_df is not None:
+            st.session_state.sgs_df = sgs_df
+            st.session_state.uploaded_file = uploaded_file
+            st.session_state.step = 3
+            st.success("File processed successfully.")
+
+def job_card_info_page():
+    sgs_df = st.session_state.sgs_df
+    st.title('Job Card Generator')
+    st.header("Job Card Information")
+    jc_number = st.text_input('JC Number')
+    issue_date = st.date_input('Issue Date')
+    area = st.text_input('Area')
+    spools = st.text_area('Spool\'s (one per line)')
+    if st.button(f"Create Job Card ({jc_number})"):
+        if not jc_number or not issue_date or not area or not spools:
+            st.error('All fields must be filled out.')
+        else:
+            # Limpeza das linhas em branco nos spools
+            spools = '\n'.join([spool.strip() for spool in spools.split('\n') if spool.strip()])
+
+            # Formatação da data para DD/MM/YYYY
+            formatted_issue_date = issue_date.strftime('%d/%m/%Y')
+            excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
+
+            # Gerar link de download
+            download_link = generate_download_link(excel_data, jc_number)
+            
+            # Exibir link de download
+            st.markdown(download_link, unsafe_allow_html=True)
+
 def main():
     if 'step' not in st.session_state:
         st.session_state.step = 1
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
-    
+
     if st.session_state.step == 1:
-        st.title('Job Card Generator - Login')
-        username = st.text_input('Username')
-        password = st.text_input('Password', type='password')
-
-        if st.button('Login'):
-            if authenticate(username, password):
-                st.session_state.authenticated = True
-                st.session_state.step = 2
-            else:
-                st.error('Invalid username or password')
-    
-    if st.session_state.authenticated and st.session_state.step == 2:
-        st.title('Job Card Generator')
-        st.header("Upload SGS Excel file")
-        uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
-        if uploaded_file is not None:
-            sgs_df = process_excel_data(uploaded_file)
-            if sgs_df is not None:
-                st.session_state.sgs_df = sgs_df
-                st.session_state.uploaded_file = uploaded_file
-                st.session_state.step = 3
-    
-    if st.session_state.authenticated and st.session_state.step == 3:
-        sgs_df = st.session_state.sgs_df
-        st.title('Job Card Generator')
-        st.header("Job Card Information")
-        jc_number = st.text_input('JC Number')
-        issue_date = st.date_input('Issue Date')
-        area = st.text_input('Area')
-        spools = st.text_area('Spool\'s (one per line)')
-
-        if st.button(f"Create Job Card ({jc_number})"):
-            if not jc_number or not issue_date or not area or not spools:
-                st.error('All fields must be filled out.')
-            else:
-                # Limpeza das linhas em branco nos spools
-                spools = '\n'.join([spool.strip() for spool in spools.split('\n') if spool.strip()])
-
-                # Formatação da data para DD/MM/YYYY
-                formatted_issue_date = issue_date.strftime('%d/%m/%Y')
-                excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
-
-                # Gerar link de download
-                download_link = generate_download_link(excel_data, jc_number)
-                
-                # Exibir link de download
-                st.markdown(download_link, unsafe_allow_html=True)
+        login_page()
+    elif st.session_state.step == 2:
+        if st.session_state.authenticated:
+            upload_page()
+    elif st.session_state.step == 3:
+        if st.session_state.authenticated:
+            job_card_info_page()
 
 if __name__ == "__main__":
     main()
