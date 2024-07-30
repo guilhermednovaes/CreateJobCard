@@ -53,13 +53,15 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     merge_format, header_format, cell_format = create_formats(workbook)
 
     worksheet.set_column('B:M', 20)
-    worksheet.set_row(0, 40)
-    worksheet.set_row(1, 40)
-    worksheet.set_row(2, 40)
+    worksheet.set_row(0, 60)
+    worksheet.set_row(1, 60)
+    worksheet.set_row(2, 60)
     
-    worksheet.merge_range('B1:D1', 'PETROBRAS', merge_format)
-    worksheet.merge_range('E1:H1', 'FPSO_P-82', merge_format)
-    worksheet.merge_range('I1:M1', 'Request For Fabrication', merge_format)
+    worksheet.merge_range('B1:D3', '', merge_format)
+    worksheet.merge_range('E1:H1', 'PETROBRAS', merge_format)
+    worksheet.merge_range('E2:H2', 'FPSO_P-82', merge_format)
+    worksheet.merge_range('E3:H3', 'Request For Fabrication', merge_format)
+    worksheet.merge_range('I1:M3', '', merge_format)
     
     # Inserção das Imagens
     worksheet.insert_image('B1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
