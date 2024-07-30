@@ -80,7 +80,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
 
     worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('G4:L4', {area}, merge_format)
+    worksheet.merge_range('G4:L4', area, merge_format)
     worksheet.merge_range('E4:F4', '', merge_format)
     worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
     worksheet.merge_range('E5:F5', '', merge_format)
@@ -135,6 +135,10 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     output.seek(0)
 
     return output
+
+def next_step(step):
+    st.session_state.step = step
+    st.experimental_set_query_params(step=step)
 
 def main():
     if 'step' not in st.session_state:
@@ -212,10 +216,6 @@ def job_card_info_page():
                 file_name=f"JobCard_{jc_number}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-
-def next_step(step):
-    st.session_state.step = step
-    st.experimental_set_query_params(step=step)
 
 if __name__ == "__main__":
     main()
