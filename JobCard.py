@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 def authenticate(username, password):
     """Autentica o usuário utilizando variáveis de ambiente."""
-    username = username.lower()  # Convertendo o login para minúsculas
+    username = username.lower()
     valid_users = [
         (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
         (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', ''))
@@ -23,8 +23,8 @@ def process_excel_data(uploaded_file):
     """Processa os dados do arquivo Excel carregado."""
     try:
         df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
-        df_spool = df_spool.iloc[1:]  # Ignorar a primeira linha
-        df_spool = df_spool.reset_index(drop=True)  # Resetar índice
+        df_spool = df_spool.iloc[1:]
+        df_spool = df_spool.reset_index(drop=True)
         return df_spool
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
@@ -134,8 +134,7 @@ def login_page():
             st.session_state.step = 2
             st.success("Login successful")
             time.sleep(1)  # Adiciona um atraso para permitir que a mensagem de sucesso seja vista
-            st.experimental_set_query_params(step=2)  # Avançar para a próxima etapa
-            st.experimental_rerun()
+            st.experimental_set_query_params(step=2)
         else:
             st.error('Invalid username or password')
 
@@ -151,8 +150,7 @@ def upload_page():
             st.session_state.step = 3
             st.success("File processed successfully.")
             time.sleep(1)  # Adiciona um atraso para permitir que a mensagem de sucesso seja vista
-            st.experimental_set_query_params(step=3)  # Avançar para a próxima etapa
-            st.experimental_rerun()
+            st.experimental_set_query_params(step=3)
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
@@ -166,17 +164,10 @@ def job_card_info_page():
         if not jc_number or not issue_date or not area or not spools:
             st.error('All fields must be filled out.')
         else:
-            # Limpeza das linhas em branco nos spools
             spools = '\n'.join([spool.strip() for spool in spools.split('\n') if spool.strip()])
-
-            # Formatação da data para DD/MM/YYYY
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
-
-            # Gerar link de download
             download_link = generate_download_link(excel_data, jc_number)
-            
-            # Exibir link de download
             st.markdown(download_link, unsafe_allow_html=True)
             st.success("Job Card created successfully.")
 
