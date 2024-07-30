@@ -129,7 +129,14 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range(f'C{row+4}:D{row+4}', 'J/C Co-Ordinator', merge_format)
     worksheet.merge_range(f'E{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
 
-    worksheet.merge_range(f'E{row+5}:F{row+5}', 'CC', merge_format)
+    worksheet.merge_range(f'F{row+5}', 'CC', merge_format)
+    worksheet.merge_range(f'G{row+5}:L{row+5}', '', merge_format)
+    
+    worksheet.merge_range(f'A{row+5}:E{row6}', '', merge_format)
+    worksheet.merge_range(f'F{row+6}', '', merge_format)
+    worksheet.merge_range(f'G{row+6}:L{row+6}', '', merge_format)
+
+    worksheet.merge_range(f'A{row+7}:L{row+7}', '', merge_format)   
 
     workbook.close()
     output.seek(0)
