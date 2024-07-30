@@ -94,27 +94,36 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
     for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
-        peso_kg = sgs_row.get('Peso (Kg)', 0)
+        
+        # Garantir que todos os valores são do tipo esperado
         try:
-            peso_kg = float(peso_kg)
-        except ValueError:
-            peso_kg = 0
+            module = str(sgs_row.get('Módulo', ''))
+            size = str(sgs_row.get('Diam. Polegadas', ''))
+            paint_code = str(sgs_row.get('Condição Pintura', ''))
+            rev = str(sgs_row.get('Rev. Isometrico', ''))
+            shop_id = str(sgs_row.get('Dia Inch', ''))
+            weight = float(sgs_row.get('Peso (Kg)', 0))
+            base_material = str(sgs_row.get('Material', ''))
+        except ValueError as e:
+            st.error(f"Erro ao converter os valores: {e}")
+            logging.error(f"Erro ao converter os valores: {e}")
+            continue
         
         data = [
             idx + 1,
-            sgs_row.get('Módulo', ''),
+            module,
             spool.strip(),
             '',
-            sgs_row.get('Diam. Polegadas', ''),
-            sgs_row.get('Condição Pintura', ''),
-            sgs_row.get('Rev. Isometrico', ''),
-            sgs_row.get('Dia Inch', ''),
-            peso_kg,
-            sgs_row.get('Material', ''),
+            size,
+            paint_code,
+            rev,
+            shop_id,
+            weight,
+            base_material,
             'Fully Issued',
             ''
         ]
-        total_weight += peso_kg
+        total_weight += weight
         worksheet.write_row(row, col, data, cell_format)
         row += 1
 
