@@ -77,11 +77,11 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     
     worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('I4:L4', f'Area : {area}', merge_format)
+    worksheet.merge_range('E4:H4', f'Area : {area}', merge_format)
     worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
-    worksheet.merge_range('I5:L5', '', merge_format)
+    worksheet.merge_range('E5:H5', '', merge_format)
 
-    worksheet.merge_range('A7:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
+    worksheet.merge_range('A6:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
     
     headers = ['No.', 'Area / WBS', 'Spool', 'Sheet', 'Size', 'Paint Code', 'REV.', 'Shop ID', 'Weight', 'Base Material', 'Material Status', 'Remarks']
     worksheet.write_row('A8', headers, header_format)
@@ -110,18 +110,18 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, data, cell_format)
         row += 1
     
-    worksheet.merge_range(f'A{row+1}:B{row+1}', 'Total Weight: (Kg)', merge_format)
-    worksheet.write(f'C{row+1}', total_weight, merge_format)
+    worksheet.merge_range(f'A{row+1}:F{row+1}', 'Total Weight: (Kg)', merge_format)
+    worksheet.merge_range(f'G{row+1}:L{row+1}', total_weight, merge_format)
     
-    worksheet.merge_range(f'A{row+2}:C{row+2}', 'Prepared by', merge_format)
-    worksheet.merge_range(f'D{row+2}:F{row+2}', 'Approved by', merge_format)
-    worksheet.merge_range(f'G{row+2}:I{row+2}', 'Received', merge_format)
+    worksheet.merge_range(f'A{row+2}:B{row+2}', 'Prepared by', merge_format)
+    worksheet.merge_range(f'C{row+2}:D{row+2}', 'Approved by', merge_format)
+    worksheet.merge_range(f'F{row+2}:L{row+2}', 'Received', merge_format)
     
-    worksheet.merge_range(f'A{row+3}:C{row+3}', 'Piping Engg.', merge_format)
-    worksheet.merge_range(f'D{row+3}:F{row+3}', 'J/C Co-Ordinator', merge_format)
-    worksheet.merge_range(f'G{row+3}:I{row+3}', 'Spooling Vendor : EJA', merge_format)
+    worksheet.merge_range(f'A{row+3}:B{row+3}', 'Piping Engg.', merge_format)
+    worksheet.merge_range(f'C{row+3}:D{row+3}', 'J/C Co-Ordinator', merge_format)
+    worksheet.merge_range(f'G{row+3}:L{row+3}', 'Spooling Vendor : EJA', merge_format)
     
-    worksheet.merge_range(f'A{row+4}:I{row+4}', 'CC', merge_format)
+    worksheet.merge_range(f'F{row+4}:F{row+4}', 'CC', merge_format)
     
     workbook.close()
     output.seek(0)
