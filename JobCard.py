@@ -127,6 +127,10 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, data, cell_format)
         row += 1
 
+    # Definir a altura das linhas da tabela e do cabeçalho
+    for r in range(8, row):
+        worksheet.set_row(r, 30)
+
     # Linha do total de peso
     worksheet.merge_range(f'A{row+1}:F{row+1}', 'Total Weight: (Kg)', merge_format)
     worksheet.merge_range(f'G{row+1}:L{row+1}', total_weight, merge_format)
