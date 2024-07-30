@@ -3,7 +3,6 @@ import pandas as pd
 import xlsxwriter
 from io import BytesIO
 import base64
-from datetime import datetime
 
 # Função para processar dados do Excel
 def process_excel_data(uploaded_file):
@@ -63,7 +62,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     row = 7
     col = 0
     total_weight = 0
-    spools_list = spools.split('\n')
+    spools_list = [spool.strip() for spool in spools.split('\n') if spool.strip()]
     for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
         data = [
@@ -102,33 +101,45 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     return output
 
-# Função para permitir download do arquivo gerado
-def generate_download_link(output, jc_number):
-    val = output.getvalue()
-    b64 = base64.b64encode(val).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
-    return href
-
 # Streamlit UI
 st.title('Job Card Generator')
 
-# Entrada do usuário
-jc_number = st.text_input('JC Number')
-issue_date = st.date_input('Issue Date')
-area = st.text_input('Area')
-spools = st.text_area('Spool\'s (one per line)')
+# Página 1: Carregar arquivo SGS
+if 'uploaded_file' not in st.session_state:
+    st.session_state.uploaded_file = None
 
-# Upload do arquivo Excel
-uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+if st.session_state.uploaded_file is None:
+    st.header("Upload SGS Excel file")
+    uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+    if uploaded_file is not None:
+        sgs_df = process_excel_data(uploaded_file)
+        if sgs_df is not None:
+            st.session_state.sgs_df = sgs_df
+            st.session_state.uploaded_file = uploaded_file
+            st.success("File processed successfully.")
+            if st.button("Next"):
+                st.experimental_rerun()
+else:
+    sgs_df = st.session_state.sgs_df
 
-if uploaded_file is not None:
-    sgs_df = process_excel_data(uploaded_file)
-    if sgs_df is not None:
-        st.write("File processed successfully.")
-        if st.button(f"Create Job Card ({jc_number})"):
-            # Formatação da data para DD/MM/YYYY
-            formatted_issue_date = issue_date.strftime('%d/%m/%Y')
-            excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
-            download_link = generate_download_link(excel_data, jc_number)
-            st.markdown(download_link, unsafe_allow_html=True)
-            st.stop()
+    # Página 2: Adicionar informações e gerar relatório
+    st.header("Job Card Information")
+    jc_number = st.text_input('JC Number')
+    issue_date = st.date_input('Issue Date')
+    area = st.text_input('Area')
+    spools = st.text_area('Spool\'s (one per line)')
+
+    if st.button(f"Create Job Card ({jc_number})"):
+        # Limpeza das linhas em branco nos spools
+        spools = '\n'.join([spool.strip() for spool in spools.split('\n') if spool.strip()])
+
+        # Formatação da data para DD/MM/YYYY
+        formatted_issue_date = issue_date.strftime('%d/%m/%Y')
+        excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
+
+        # Gerar link de download
+        val = excel_data.getvalue()
+        b64 = base64.b64encode(val).decode()
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+        
+        st.markdown(href, unsafe_allow_html=True)
