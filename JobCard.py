@@ -211,17 +211,29 @@ def generate_material_template(jc_number, issue_date, area, drawing_df):
     row = 8
     col = 0
     for idx, drawing_row in drawing_df.iterrows():
+        try:
+            spool = str(drawing_row.get('SpoolNo', ''))
+            rev = str(drawing_row.get('RevNo', ''))
+            mat_code_1 = str(drawing_row.get('SapCode', ''))
+            size = str(drawing_row.get('Size_Inch', ''))
+            description = str(drawing_row.get('Description', ''))
+            req_qty = float(drawing_row.get('RequiredQty', 0))
+        except ValueError as e:
+            st.error(f"Erro ao converter os valores: {e}")
+            logging.error(f"Erro ao converter os valores: {e}")
+            continue
+        
         data = [
-            drawing_row.get('SpoolNo', ''),
-            drawing_row.get('RevNo', ''),
-            drawing_row.get('SapCode', ''),
+            spool,
+            rev,
+            mat_code_1,
             '',
-            drawing_row.get('Size_Inch', ''),
-            drawing_row.get('Description', ''),
+            size,
+            description,
             '',
             '',
             '',
-            drawing_row.get('RequiredQty', 0),
+            req_qty,
             '',
             ''
         ]
