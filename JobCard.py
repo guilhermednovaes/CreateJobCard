@@ -10,7 +10,6 @@ import os
 logging.basicConfig(level=logging.INFO)
 
 def authenticate(username, password):
-    """Autentica o usuário utilizando variáveis de ambiente."""
     username = username.lower()
     valid_users = [
         (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
@@ -19,7 +18,6 @@ def authenticate(username, password):
     return (username, password) in valid_users
 
 def process_excel_data(uploaded_file):
-    """Processa os dados do arquivo Excel carregado."""
     try:
         df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
         df_spool = df_spool.iloc[1:]
@@ -31,7 +29,6 @@ def process_excel_data(uploaded_file):
         return None
 
 def create_formats(workbook):
-    """Cria e retorna formatos de célula para o Excel."""
     merge_format = workbook.add_format({
         'bold': 1,
         'border': 1,
@@ -50,7 +47,6 @@ def create_formats(workbook):
     return merge_format, header_format, cell_format
 
 def generate_template(jc_number, issue_date, area, spools, sgs_df):
-    """Gera o arquivo Excel do Job Card com os dados fornecidos."""
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
@@ -117,7 +113,6 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     return output
 
 def generate_download_link(output, jc_number):
-    """Gera link para download do arquivo Excel."""
     val = output.getvalue()
     b64 = base64.b64encode(val).decode()
     href = f'data:application/octet-stream;base64,{b64}'
@@ -133,6 +128,8 @@ def login_page():
             st.session_state.step = 2
             st.success("Login successful")
             st.experimental_set_query_params(step=2)
+        else:
+            st.error('Invalid username or password')
 
 def upload_page():
     st.title('Job Card Generator')
@@ -158,15 +155,15 @@ def job_card_info_page():
     if spools:
         unique_spools = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
         spool_label = f"Spool's (one per line) ({len(unique_spools)} Spools)"
-        st.text_area(spool_label, value=spools, height=100, key="spools_display")
+        st.session_state.spools = '\n'.join(unique_spools)
+        st.text_area(spool_label, value=st.session_state.spools, height=100, key="spools_display")
 
     if st.button(f"Create Job Card ({jc_number})"):
         if not jc_number or not issue_date or not area or not spools:
             st.error('All fields must be filled out.')
         else:
-            spools = '\n'.join(unique_spools)
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
-            excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
+            excel_data = generate_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             download_link = generate_download_link(excel_data, jc_number)
             st.markdown(f'<a href="{download_link}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>', unsafe_allow_html=True)
             st.success("Job Card created successfully.")
@@ -183,12 +180,20 @@ def main():
 
     if st.session_state.step == 1:
         login_page()
+        if st.session_state.get('authenticated'):
+            st.button('Next', on_click=next_step, args=(2,))
     elif st.session_state.step == 2:
         if st.session_state.authenticated:
             upload_page()
+            if st.session_state.get('sgs_df') is not None:
+                st.button('Next', on_click=next_step, args=(3,))
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
             job_card_info_page()
+
+def next_step(step):
+    st.session_state.step = step
+    st.experimental_set_query_params(step=step)
 
 if __name__ == "__main__":
     main()
