@@ -98,6 +98,12 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
     for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
+        peso_kg = sgs_row.get('Peso (Kg)', 0)
+        try:
+            peso_kg = float(peso_kg)
+        except ValueError:
+            peso_kg = 0
+        
         data = [
             idx + 1,
             sgs_row.get('Módulo', ''),
@@ -107,12 +113,12 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
             sgs_row.get('Condição Pintura', ''),
             sgs_row.get('Rev. Isometrico', ''),
             sgs_row.get('Dia Inch', ''),
-            sgs_row.get('Peso (Kg)', 0),
+            peso_kg,
             sgs_row.get('Material', ''),
             'Fully Issued',
             ''
         ]
-        total_weight += sgs_row.get('Peso (Kg)', 0)
+        total_weight += peso_kg
         worksheet.write_row(row, col, data, cell_format)
         row += 1
 
