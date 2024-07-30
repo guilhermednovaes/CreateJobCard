@@ -150,13 +150,13 @@ def job_card_info_page():
     jc_number = st.text_input('JC Number')
     issue_date = st.date_input('Issue Date')
     area = st.text_input('Area')
-    spools = st.text_area('Spool\'s (one per line)')
+    spools = st.text_area('Spool\'s (one per line)', key='spools_input')
 
     if spools:
         unique_spools = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
         spool_label = f"Spool's (one per line) ({len(unique_spools)} Spools)"
         st.session_state.spools = '\n'.join(unique_spools)
-        st.text_area(spool_label, value=st.session_state.spools, height=100, key="spools_display")
+        st.text_area(spool_label, value=st.session_state.spools, height=100, key="spools_display", disabled=True)
 
     if st.button(f"Create Job Card ({jc_number})"):
         if not jc_number or not issue_date or not area or not spools:
