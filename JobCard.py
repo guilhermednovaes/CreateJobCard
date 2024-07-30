@@ -3,9 +3,13 @@ import pandas as pd
 import xlsxwriter
 from io import BytesIO
 import base64
+import logging
 
-# Função para processar dados do Excel
+# Configuração do logger
+logging.basicConfig(level=logging.INFO)
+
 def process_excel_data(uploaded_file):
+    """Processa os dados do arquivo Excel carregado."""
     try:
         df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
         df_spool = df_spool.iloc[1:]  # Ignorar a primeira linha
@@ -13,10 +17,11 @@ def process_excel_data(uploaded_file):
         return df_spool
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+        logging.error(f"Erro ao processar o arquivo: {e}")
         return None
 
-# Função para criar formato de célula
 def create_formats(workbook):
+    """Cria e retorna formatos de célula para o Excel."""
     merge_format = workbook.add_format({
         'bold': 1,
         'border': 1,
@@ -34,8 +39,8 @@ def create_formats(workbook):
     
     return merge_format, header_format, cell_format
 
-# Função para gerar o arquivo Excel do Job Card
 def generate_template(jc_number, issue_date, area, spools, sgs_df):
+    """Gera o arquivo Excel do Job Card com os dados fornecidos."""
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
@@ -101,6 +106,13 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     return output
 
+def generate_download_link(output, jc_number):
+    """Gera link para download do arquivo Excel."""
+    val = output.getvalue()
+    b64 = base64.b64encode(val).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+    return href
+
 # Streamlit UI
 st.title('Job Card Generator')
 
@@ -138,8 +150,7 @@ else:
         excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
 
         # Gerar link de download
-        val = excel_data.getvalue()
-        b64 = base64.b64encode(val).decode()
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+        download_link = generate_download_link(excel_data, jc_number)
         
-        st.markdown(href, unsafe_allow_html=True)
+        # Exibir link de download
+        st.markdown(download_link, unsafe_allow_html=True)
