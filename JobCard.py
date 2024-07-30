@@ -67,11 +67,14 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.insert_image('B1', 'Logo/BR.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 15, 'y_offset': 5, 'x_scale': 0.5, 'y_scale': 0.5})
     
-    worksheet.merge_range('B4:M4', f'JC Number : {jc_number}', merge_format)
-    worksheet.merge_range('B5:M5', f'Issue Date : {issue_date}', merge_format)
-    worksheet.merge_range('B6:M6', f'Area : {area}', merge_format)
+    worksheet.merge_range('B4:F4', f'JC Number : {jc_number}', merge_format)
+    worksheet.merge_range('H4:M4', f'Area : {area}', merge_format)
+    worksheet.merge_range('B5:F5', f'Issue Date : {issue_date}', merge_format)
+        worksheet.merge_range('H5:M5', f'', merge_format)
+
     
-    worksheet.merge_range('B7:M7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
+    worksheet.merge_range('B7:M7', 'Special Instruction : Please be informed that Materials for the following. 
+SPOOL PIECE No.[s] are available for Issuance.', merge_format)
     
     headers = ['No.', 'Area / WBS', 'Spool', 'Sheet', 'Size', 'Paint Code', 'REV.', 'Shop ID', 'Weight', 'Base Material', 'Material Status', 'Remarks']
     worksheet.write_row('B8', headers, header_format)
