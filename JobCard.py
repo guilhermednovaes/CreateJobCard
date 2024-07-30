@@ -165,7 +165,7 @@ def job_card_info_page():
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             download_link = generate_download_link(excel_data, jc_number)
-            st.markdown(f'<a href="{download_link}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="{download_link}" download="JobCard_{jc_number}.xlsx">Download Job Card</a>', unsafe_allow_html=True)
             st.success("Job Card created successfully.")
 
 def main():
