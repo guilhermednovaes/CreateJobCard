@@ -139,7 +139,9 @@ if uploaded_file:
             sgs_df = sgs_df[i + 1:]
             break
 
-    sgs_df.reset_index(drop=True, inplace=True)  # Reset the index after adjusting the DataFrame
+    # Remove empty rows and reset index
+    sgs_df.dropna(how='all', inplace=True)
+    sgs_df.reset_index(drop=True, inplace=True)
 
     # Display the DataFrame columns for debugging
     st.write("Columns in the DataFrame:", sgs_df.columns)
