@@ -77,7 +77,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     row = 7
     col = 0
     total_weight = 0
-    spools_list = [spool.strip() for spool in spools.split('\n') if spool.strip()]
+    spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
     for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
         data = [
@@ -120,35 +120,25 @@ def generate_download_link(output, jc_number):
     """Gera link para download do arquivo Excel."""
     val = output.getvalue()
     b64 = base64.b64encode(val).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>'
+    href = f'data:application/octet-stream;base64,{b64}'
     return href
 
 def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username')
     password = st.text_input('Password', type='password')
-    login_success = False
     if st.button('Login'):
         if authenticate(username, password):
             st.session_state.authenticated = True
             st.session_state.step = 2
             st.experimental_set_query_params(step=2)
-            login_success = True
             st.success("Login successful")
         else:
             st.error('Invalid username or password')
-    
-    if login_success:
-        st.button('Next', on_click=next_step, args=(2,))
-
-def next_step(step):
-    st.session_state.step = step
-    st.experimental_set_query_params(step=step)
 
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
-    upload_success = False
     uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
     if uploaded_file is not None:
         sgs_df = process_excel_data(uploaded_file)
@@ -157,29 +147,35 @@ def upload_page():
             st.session_state.uploaded_file = uploaded_file
             st.session_state.step = 3
             st.experimental_set_query_params(step=3)
-            upload_success = True
             st.success("File processed successfully.")
     
-    if upload_success:
-        st.button('Next', on_click=next_step, args=(3,))
+    if st.session_state.get('upload_success'):
+        if st.button('Next'):
+            st.session_state.step = 3
+            st.experimental_set_query_params(step=3)
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
     st.title('Job Card Generator')
-    st.header("Job Card Information")
     jc_number = st.text_input('JC Number')
     issue_date = st.date_input('Issue Date')
     area = st.text_input('Area')
     spools = st.text_area('Spool\'s (one per line)')
+
+    if spools:
+        unique_spools = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
+        spool_label = f"Spool's (one per line) ({len(unique_spools)} Spools)"
+        st.text_area(spool_label, value=spools, height=100, key="spools_display")
+
     if st.button(f"Create Job Card ({jc_number})"):
         if not jc_number or not issue_date or not area or not spools:
             st.error('All fields must be filled out.')
         else:
-            spools = '\n'.join([spool.strip() for spool in spools.split('\n') if spool.strip()])
+            spools = '\n'.join(unique_spools)
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, spools, sgs_df)
             download_link = generate_download_link(excel_data, jc_number)
-            st.markdown(download_link, unsafe_allow_html=True)
+            st.markdown(f'<a href="{download_link}" download="JobCard_{jc_number}.xlsx">Download Excel file</a>', unsafe_allow_html=True)
             st.success("Job Card created successfully.")
 
 def main():
