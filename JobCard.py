@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import xlsxwriter
 from io import BytesIO
-import base64
 import logging
 import os
 
@@ -112,22 +111,28 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     
     return output
 
-def trigger_download(output, jc_number):
-    val = output.getvalue()
-    b64 = base64.b64encode(val).decode()
-    href = f'data:application/octet-stream;base64,{b64}'
-    js = f"""
-    <script>
-    var element = document.createElement('a');
-    element.setAttribute('href', '{href}');
-    element.setAttribute('download', 'JobCard_{jc_number}.xlsx');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    </script>
-    """
-    st.markdown(js, unsafe_allow_html=True)
+def main():
+    if 'step' not in st.session_state:
+        st.session_state.step = 1
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+
+    query_params = st.experimental_get_query_params()
+    if 'step' in query_params:
+        st.session_state.step = int(query_params['step'][0])
+
+    if st.session_state.step == 1:
+        login_page()
+        if st.session_state.get('authenticated'):
+            st.button('Next', on_click=next_step, args=(2,))
+    elif st.session_state.step == 2:
+        if st.session_state.authenticated:
+            upload_page()
+            if st.session_state.get('sgs_df') is not None:
+                st.button('Next', on_click=next_step, args=(3,))
+    elif st.session_state.step == 3:
+        if st.session_state.authenticated:
+            job_card_info_page()
 
 def login_page():
     st.title('Job Card Generator - Login')
@@ -176,30 +181,12 @@ def job_card_info_page():
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             excel_data = generate_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             st.success("Job Card created successfully.")
-            trigger_download(excel_data, jc_number)
-
-def main():
-    if 'step' not in st.session_state:
-        st.session_state.step = 1
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
-
-    query_params = st.experimental_get_query_params()
-    if 'step' in query_params:
-        st.session_state.step = int(query_params['step'][0])
-
-    if st.session_state.step == 1:
-        login_page()
-        if st.session_state.get('authenticated'):
-            st.button('Next', on_click=next_step, args=(2,))
-    elif st.session_state.step == 2:
-        if st.session_state.authenticated:
-            upload_page()
-            if st.session_state.get('sgs_df') is not None:
-                st.button('Next', on_click=next_step, args=(3,))
-    elif st.session_state.step == 3:
-        if st.session_state.authenticated:
-            job_card_info_page()
+            st.download_button(
+                label="Download Job Card",
+                data=excel_data.getvalue(),
+                file_name=f"JobCard_{jc_number}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
 def next_step(step):
     st.session_state.step = step
