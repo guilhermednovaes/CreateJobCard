@@ -131,10 +131,8 @@ def login_page():
         if authenticate(username, password):
             st.session_state.authenticated = True
             st.session_state.step = 2
-            st.experimental_set_query_params(step=2)
             st.success("Login successful")
-        else:
-            st.error('Invalid username or password')
+            st.experimental_set_query_params(step=2)
 
 def upload_page():
     st.title('Job Card Generator')
@@ -146,12 +144,7 @@ def upload_page():
             st.session_state.sgs_df = sgs_df
             st.session_state.uploaded_file = uploaded_file
             st.session_state.step = 3
-            st.experimental_set_query_params(step=3)
             st.success("File processed successfully.")
-    
-    if st.session_state.get('upload_success'):
-        if st.button('Next'):
-            st.session_state.step = 3
             st.experimental_set_query_params(step=3)
 
 def job_card_info_page():
