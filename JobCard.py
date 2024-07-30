@@ -138,7 +138,6 @@ def main():
             if authenticate(username, password):
                 st.session_state.authenticated = True
                 st.session_state.step = 2
-                st.experimental_rerun()
             else:
                 st.error('Invalid username or password')
     
@@ -152,7 +151,6 @@ def main():
                 st.session_state.sgs_df = sgs_df
                 st.session_state.uploaded_file = uploaded_file
                 st.session_state.step = 3
-                st.experimental_rerun()
     
     if st.session_state.authenticated and st.session_state.step == 3:
         sgs_df = st.session_state.sgs_df
