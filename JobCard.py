@@ -131,6 +131,7 @@ def login_page():
         if authenticate(username, password):
             st.session_state.authenticated = True
             st.session_state.step = 2
+            st.experimental_set_query_params(step=2)  # Avançar para a próxima etapa
         else:
             st.error('Invalid username or password')
 
@@ -145,6 +146,7 @@ def upload_page():
             st.session_state.uploaded_file = uploaded_file
             st.session_state.step = 3
             st.success("File processed successfully.")
+            st.experimental_set_query_params(step=3)  # Avançar para a próxima etapa
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
@@ -172,10 +174,15 @@ def job_card_info_page():
             st.markdown(download_link, unsafe_allow_html=True)
 
 def main():
+    st.experimental_get_query_params()
+    
     if 'step' not in st.session_state:
         st.session_state.step = 1
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
+
+    step = st.experimental_get_query_params().get("step", [1])[0]
+    st.session_state.step = int(step)
 
     if st.session_state.step == 1:
         login_page()
