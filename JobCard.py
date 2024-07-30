@@ -131,7 +131,6 @@ def login_page():
         if authenticate(username, password):
             st.session_state.authenticated = True
             st.session_state.step = 2
-            st.experimental_rerun()
         else:
             st.error('Invalid username or password')
 
@@ -146,7 +145,6 @@ def upload_page():
             st.session_state.uploaded_file = uploaded_file
             st.session_state.step = 3
             st.success("File processed successfully.")
-            st.experimental_rerun()  # Forçar a atualização da página para avançar automaticamente
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
