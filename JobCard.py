@@ -131,6 +131,7 @@ def login_page():
         if authenticate(username, password):
             st.session_state.authenticated = True
             st.session_state.step = 2
+            st.experimental_rerun()
         else:
             st.error('Invalid username or password')
 
