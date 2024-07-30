@@ -129,8 +129,8 @@ spools = st.text_area('Spools (one per line):')
 uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 
 if uploaded_file:
-    # Read the "Spool" sheet starting from row 1
-    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', header=1)
+    # Read the "Spool" sheet from the uploaded SGS file starting from the first row
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', header=0)
 
     # Display the DataFrame columns for debugging
     st.write("Columns in the DataFrame:", sgs_df.columns)
