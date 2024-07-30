@@ -129,10 +129,15 @@ spools = st.text_area('Spools (one per line):')
 uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 
 if uploaded_file:
-    # Read the "Spool" sheet starting from row 7, ignoring row 8
-    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=7)
-    sgs_df.columns = sgs_df.iloc[0]  # Set the first row as column headers
-    sgs_df = sgs_df[1:].reset_index(drop=True)  # Drop the first row and reset index
+    # Read the "Spool" sheet starting from row 9
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=9)
+    
+    # Manually set the column names
+    sgs_df.columns = [
+        'Module', 'Area', 'Document Number', 'Line Number', 'Isometric', 'Spool', 'PF Code',
+        'Hold', 'Hold Date', 'DCN', 'Isometric Revision', 'P-Number', 'Material', 'Tube Material', 'More Columns...'
+    ]
+    sgs_df = sgs_df[1:].reset_index(drop=True)  # Adjust the DataFrame by removing the first row and resetting the index
 
     # Ensure the 'PF Code' column exists in the dataframe
     if 'PF Code' in sgs_df.columns:
