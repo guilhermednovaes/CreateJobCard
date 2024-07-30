@@ -52,7 +52,7 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.write_row('A7', headers, header_format)
 
     # Add data to the worksheet
-    row = 7
+    row = 8
     col = 0
     total_weight = 0
     for i, spool in enumerate(spools.split(',')):
