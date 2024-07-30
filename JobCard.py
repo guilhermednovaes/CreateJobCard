@@ -109,10 +109,16 @@ spools = st.text_area("Spools (comma separated)")
 
 uploaded_file = st.file_uploader("Upload SGS Excel file", type=["xlsx"])
 if uploaded_file:
-    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=1)
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool')
     sgs_df.columns = sgs_df.iloc[0]
     sgs_df = sgs_df[1:]
 
+    st.write("Columns in the DataFrame:")
+    st.write(sgs_df.columns.tolist())
+
     if st.button(f"Create Job Card ({jc_number})"):
-        excel_data = generate_template(jc_number, issue_date, area, spools, sgs_df)
-        st.markdown(download_excel(excel_data, f"{jc_number}.xlsx"), unsafe_allow_html=True)
+        try:
+            excel_data = generate_template(jc_number, issue_date, area, spools, sgs_df)
+            st.markdown(download_excel(excel_data, f"{jc_number}.xlsx"), unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
