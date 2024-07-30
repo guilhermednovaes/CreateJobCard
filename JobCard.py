@@ -66,10 +66,6 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
     for row, height in header_footer_row_heights.items():
         worksheet.set_row(row - 1, height)
 
-    # Definir a altura das linhas da tabela
-    for row in range(7, 137):
-        worksheet.set_row(row, 30)
-
     worksheet.merge_range('A1:C3', '', merge_format)
     worksheet.merge_range('D1:H1', 'PETROBRAS', merge_format)
     worksheet.merge_range('D2:H2', 'FPSO_P-82', merge_format)
@@ -122,30 +118,38 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, data, cell_format)
         row += 1
 
+    # Linha do total de peso
     worksheet.merge_range(f'A{row+1}:F{row+1}', 'Total Weight: (Kg)', merge_format)
     worksheet.merge_range(f'G{row+1}:L{row+1}', total_weight, merge_format)
 
-    worksheet.merge_range(f'A{row+2}:B{row+2}', 'Prepared by', merge_format)
-    worksheet.merge_range(f'C{row+2}:D{row+2}', 'Approved by', merge_format)
-    worksheet.merge_range(f'E{row+2}:L{row+2}', 'Received', merge_format)
+    # Linhas de rodapé
+    row += 2
+    worksheet.merge_range(f'A{row}:B{row}', 'Prepared by', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', 'Approved by', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', 'Received', merge_format)
 
-    worksheet.merge_range(f'A{row+3}:B{row+3}', '', merge_format)
-    worksheet.merge_range(f'C{row+3}:D{row+3}', '', merge_format)
-    worksheet.merge_range(f'E{row+3}:L{row+3}', '', merge_format)
+    row += 1
+    worksheet.merge_range(f'A{row}:B{row}', '', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', '', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', '', merge_format)
     
-    worksheet.merge_range(f'A{row+4}:B{row+4}', 'Piping Engg.', merge_format)
-    worksheet.merge_range(f'C{row+4}:D{row+4}', 'J/C Co-Ordinator', merge_format)
-    worksheet.merge_range(f'E{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
+    row += 1
+    worksheet.merge_range(f'A{row}:B{row}', 'Piping Engg.', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', 'J/C Co-Ordinator', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', 'Spooling Vendor : EJA', merge_format)
    
-    worksheet.merge_range(f'A{row+5}:E{row+5}', '', merge_format)
-    worksheet.write(f'F{row+5}', 'CC', merge_format)
-    worksheet.merge_range(f'G{row+5}:L{row+5}', '', merge_format)
+    row += 1
+    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
+    worksheet.write(f'F{row}', 'CC', merge_format)
+    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
     
-    worksheet.merge_range(f'A{row+6}:E{row+6}', '', merge_format)
-    worksheet.merge_range(f'F{row+6}:F{row+6}', '', merge_format)
-    worksheet.merge_range(f'G{row+6}:L{row+6}', '', merge_format)
+    row += 1
+    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
+    worksheet.merge_range(f'F{row}:F{row}', '', merge_format)
+    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
-    worksheet.merge_range(f'A{row+7}:L{row+7}', '', merge_format)   
+    row += 1
+    worksheet.merge_range(f'A{row}:L{row}', '', merge_format)   
 
     workbook.close()
     output.seek(0)
