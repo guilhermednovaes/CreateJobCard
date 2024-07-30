@@ -169,7 +169,7 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
 
     return output
 
-def generate_material_template(jc_number, issue_date, area, drawing_df):
+def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
@@ -210,7 +210,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df):
 
     row = 8
     col = 0
-    for idx, drawing_row in drawing_df.iterrows():
+    spools_list = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
+    drawing_filtered_df = drawing_df[drawing_df['SpoolNo'].isin(spools_list)]
+    for idx, drawing_row in drawing_filtered_df.iterrows():
         try:
             spool = str(drawing_row.get('SpoolNo', ''))
             rev = str(drawing_row.get('RevNo', ''))
@@ -356,19 +358,21 @@ def job_card_info_page():
         else:
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
             spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
-            material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df)
+            material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df, st.session_state.spools)
             st.success("Job Cards created successfully.")
             st.download_button(
                 label="Download Job Card Spools",
                 data=spools_excel.getvalue(),
                 file_name=f"JobCard_{jc_number}_Spools.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key='download_spools'
             )
             st.download_button(
                 label="Download Job Card Material",
                 data=material_excel.getvalue(),
                 file_name=f"JobCard_{jc_number}_Material.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key='download_material'
             )
 
 if __name__ == "__main__":
