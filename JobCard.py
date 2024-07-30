@@ -71,14 +71,14 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
             sgs_row = sgs_df[sgs_df['PF Code'] == spool].iloc[0]
             data.append([
                 idx,
-                sgs_row.get('Area', ''),
+                sgs_row.get('Área', ''),
                 spool,
                 '',  # Sheet
                 '',  # Size
                 '',  # Paint Code
                 '',  # REV.
                 '',  # Shop ID
-                '',  # Weight
+                sgs_row.get('Peso (Kg)', ''),
                 sgs_row.get('Material', ''),
                 '',  # Material Status
                 ''   # Remarks
@@ -129,19 +129,8 @@ spools = st.text_area('Spools (one per line):')
 uploaded_file = st.file_uploader("Upload SGS Excel file", type="xlsx")
 
 if uploaded_file:
-    # Read the "Spool" sheet starting from row 9
-    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', skiprows=9)
-
-    # Find the first non-null row to set as column headers
-    for i, row in sgs_df.iterrows():
-        if row.notna().any():
-            sgs_df.columns = row
-            sgs_df = sgs_df[i + 1:]
-            break
-
-    # Remove empty rows and reset index
-    sgs_df.dropna(how='all', inplace=True)
-    sgs_df.reset_index(drop=True, inplace=True)
+    # Read the "Spool" sheet starting from row 1
+    sgs_df = pd.read_excel(uploaded_file, sheet_name='Spool', header=1)
 
     # Display the DataFrame columns for debugging
     st.write("Columns in the DataFrame:", sgs_df.columns)
