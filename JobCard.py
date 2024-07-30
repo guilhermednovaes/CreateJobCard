@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import xlsxwriter
 from io import BytesIO
-import zipfile
 import logging
 import os
 
@@ -48,19 +47,25 @@ def create_formats(workbook):
         'align': 'center',
         'valign': 'vcenter'})
 
-    return merge_format, header_format, cell_format
+    cell_wrap_format = workbook.add_format({
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter',
+        'text_wrap': True})
+
+    return merge_format, header_format, cell_format, cell_wrap_format
 
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
 
-    merge_format, header_format, cell_format = create_formats(workbook)
+    merge_format, header_format, cell_format, cell_wrap_format = create_formats(workbook)
 
     # Definir as larguras das colunas
     col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 13.86, 'L': 13.140625}
     for col, width in col_widths.items():
-        worksheet.set_column(f'{col}:{col}', width)
+        worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
     # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
@@ -175,12 +180,12 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
 
-    merge_format, header_format, cell_format = create_formats(workbook)
+    merge_format, header_format, cell_format, cell_wrap_format = create_formats(workbook)
 
     # Definir as larguras das colunas específicas
     col_widths = {'A': 35.5703125, 'B': 13.0, 'C': 22.28515625, 'D': 9.140625, 'E': 13.0, 'F': 46.42578125, 'G': 9.140625, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
     for col, width in col_widths.items():
-        worksheet.set_column(f'{col}:{col}', width)
+        worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
     # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
@@ -281,14 +286,6 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     return output
 
-def create_zip(spools_excel, material_excel, jc_number):
-    zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr(f"JobCard_{jc_number}_Spools.xlsx", spools_excel.getvalue())
-        zf.writestr(f"JobCard_{jc_number}_Material.xlsx", material_excel.getvalue())
-    zip_buffer.seek(0)
-    return zip_buffer
-
 def next_step(step):
     st.session_state.step = step
     st.experimental_set_query_params(step=step)
@@ -369,12 +366,19 @@ def job_card_info_page():
             spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df, st.session_state.spools)
             st.success("Job Cards created successfully.")
-            zip_buffer = create_zip(spools_excel, material_excel, jc_number)
             st.download_button(
-                label="Download Both Job Cards",
-                data=zip_buffer,
-                file_name=f"JobCard_{jc_number}_Both.zip",
-                mime="application/zip"
+                label="Download Job Card Spools",
+                data=spools_excel.getvalue(),
+                file_name=f"JobCard_{jc_number}_Spools.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key='download_spools'
+            )
+            st.download_button(
+                label="Download Job Card Material",
+                data=material_excel.getvalue(),
+                file_name=f"JobCard_{jc_number}_Material.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key='download_material'
             )
 
 if __name__ == "__main__":
