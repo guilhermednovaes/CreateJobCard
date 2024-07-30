@@ -12,10 +12,11 @@ logging.basicConfig(level=logging.INFO)
 def authenticate(username, password):
     """Autentica o usuário utilizando variáveis de ambiente."""
     username = username.lower()  # Convertendo o login para minúsculas
-    if (username == os.getenv('USERNAME1').lower() and password == os.getenv('PASSWORD1')) or \
-       (username == os.getenv('USERNAME2').lower() and password == os.getenv('PASSWORD2')):
-        return True
-    return False
+    valid_users = [
+        (os.getenv('USERNAME1').lower(), os.getenv('PASSWORD1')),
+        (os.getenv('USERNAME2').lower(), os.getenv('PASSWORD2'))
+    ]
+    return (username, password) in valid_users
 
 def process_excel_data(uploaded_file):
     """Processa os dados do arquivo Excel carregado."""
@@ -138,6 +139,8 @@ def main():
                 st.session_state.authenticated = True
                 st.session_state.step = 2
                 st.success('Login successful')
+            else:
+                st.error('Invalid username or password')
     
     if st.session_state.authenticated and st.session_state.step == 2:
         st.title('Job Card Generator')
