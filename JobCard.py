@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import xlsxwriter
 from io import BytesIO
+import zipfile
 import logging
 import os
 
@@ -280,6 +281,14 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     return output
 
+def create_zip(spools_excel, material_excel, jc_number):
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr(f"JobCard_{jc_number}_Spools.xlsx", spools_excel.getvalue())
+        zf.writestr(f"JobCard_{jc_number}_Material.xlsx", material_excel.getvalue())
+    zip_buffer.seek(0)
+    return zip_buffer
+
 def next_step(step):
     st.session_state.step = step
     st.experimental_set_query_params(step=step)
@@ -360,26 +369,12 @@ def job_card_info_page():
             spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
             material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df, st.session_state.spools)
             st.success("Job Cards created successfully.")
-            st.download_button(
-                label="Download Job Card Spools",
-                data=spools_excel.getvalue(),
-                file_name=f"JobCard_{jc_number}_Spools.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key='download_spools'
-            )
-            st.download_button(
-                label="Download Job Card Material",
-                data=material_excel.getvalue(),
-                file_name=f"JobCard_{jc_number}_Material.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key='download_material'
-            )
+            zip_buffer = create_zip(spools_excel, material_excel, jc_number)
             st.download_button(
                 label="Download Both Job Cards",
-                data=(spools_excel.getvalue(), material_excel.getvalue()),
+                data=zip_buffer,
                 file_name=f"JobCard_{jc_number}_Both.zip",
-                mime="application/zip",
-                key='download_both'
+                mime="application/zip"
             )
 
 if __name__ == "__main__":
