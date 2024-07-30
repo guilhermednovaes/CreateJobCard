@@ -119,17 +119,17 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
 
     worksheet.merge_range(f'A{row+2}:B{row+2}', 'Prepared by', merge_format)
     worksheet.merge_range(f'C{row+2}:D{row+2}', 'Approved by', merge_format)
-    worksheet.merge_range(f'F{row+2}:L{row+2}', 'Received', merge_format)
+    worksheet.merge_range(f'E{row+2}:L{row+2}', 'Received', merge_format)
 
     worksheet.merge_range(f'A{row+3}:B{row+3}', '', merge_format)
     worksheet.merge_range(f'C{row+3}:D{row+3}', '', merge_format)
-    worksheet.merge_range(f'F{row+3}:L{row+3}', '', merge_format)
+    worksheet.merge_range(f'E{row+3}:L{row+3}', '', merge_format)
     
     worksheet.merge_range(f'A{row+4}:B{row+4}', 'Piping Engg.', merge_format)
     worksheet.merge_range(f'C{row+4}:D{row+4}', 'J/C Co-Ordinator', merge_format)
-    worksheet.merge_range(f'G{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
+    worksheet.merge_range(f'E{row+4}:L{row+4}', 'Spooling Vendor : EJA', merge_format)
 
-    worksheet.write(f'F{row+4}', 'CC', merge_format)
+    worksheet.merge_range(f'E{row+5}:F{row+5}', 'CC', merge_format)
 
     workbook.close()
     output.seek(0)
