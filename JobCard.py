@@ -17,12 +17,12 @@ def authenticate(username, password):
     ]
     return (username, password) in valid_users
 
-def process_excel_data(uploaded_file):
+def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
-        df_spool = pd.read_excel(uploaded_file, sheet_name='Spool', header=9).dropna(how='all')
-        df_spool = df_spool.iloc[1:]
-        df_spool = df_spool.reset_index(drop=True)
-        return df_spool
+        df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
+        df = df.iloc[1:]
+        df = df.reset_index(drop=True)
+        return df
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
         logging.error(f"Erro ao processar o arquivo: {e}")
@@ -49,7 +49,7 @@ def create_formats(workbook):
 
     return merge_format, header_format, cell_format
 
-def generate_template(jc_number, issue_date, area, spools, sgs_df):
+def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
@@ -169,6 +169,103 @@ def generate_template(jc_number, issue_date, area, spools, sgs_df):
 
     return output
 
+def generate_material_template(jc_number, issue_date, area, drawing_df):
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+
+    merge_format, header_format, cell_format = create_formats(workbook)
+
+    # Definir as larguras das colunas
+    col_widths = {'A': 25, 'B': 10, 'C': 15, 'D': 15, 'E': 10, 'F': 40, 'G': 15, 'H': 15, 'I': 10, 'J': 10, 'K': 10, 'L': 15}
+    for col, width in col_widths.items():
+        worksheet.set_column(f'{col}:{col}', width)
+
+    # Definir as alturas das linhas antes e depois da tabela
+    header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
+    for row, height in header_footer_row_heights.items():
+        worksheet.set_row(row - 1, height)
+
+    worksheet.merge_range('A1:C3', '', merge_format)
+    worksheet.merge_range('D1:H1', 'PETROBRAS', merge_format)
+    worksheet.merge_range('D2:H2', 'FPSO_P-82', merge_format)
+    worksheet.merge_range('D3:H3', 'Material Pick Ticket SpoolWise', merge_format)
+    worksheet.merge_range('I1:L3', '', merge_format)
+
+    # Inserção das Imagens
+    worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
+    worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
+
+    worksheet.merge_range('A4:D4', f'JC Number : {jc_number}', merge_format)
+    worksheet.merge_range('G4:L4', area, merge_format)
+    worksheet.merge_range('E4:F4', '', merge_format)
+    worksheet.merge_range('A5:D5', f'Issue Date : {issue_date}', merge_format)
+    worksheet.merge_range('E5:F5', '', merge_format)
+    worksheet.merge_range('G5:L5', '', merge_format)
+
+    worksheet.merge_range('A6:L7', 'Special Instruction : Please be informed that Materials for the following. SPOOL PIECE No.[s] are available for Issuance.', merge_format)
+
+    headers = ['Spool', 'Rev', 'Mat Code 1', 'Mat Code 2', 'Size', 'Description', 'MRIR No', 'Heat No', 'UOM', 'Req Qty', 'Issued Qty', 'Source']
+    worksheet.write_row('A8', headers, header_format)
+
+    row = 8
+    col = 0
+    for idx, drawing_row in drawing_df.iterrows():
+        data = [
+            drawing_row.get('SpoolNo', ''),
+            drawing_row.get('RevNo', ''),
+            drawing_row.get('SapCode', ''),
+            '',
+            drawing_row.get('Size_Inch', ''),
+            drawing_row.get('Description', ''),
+            '',
+            '',
+            '',
+            drawing_row.get('RequiredQty', 0),
+            '',
+            ''
+        ]
+        worksheet.write_row(row, col, data, cell_format)
+        row += 1
+
+    # Definir a altura das linhas da tabela e do cabeçalho
+    for r in range(8, row):
+        worksheet.set_row(r, 30)
+
+    # Linhas de rodapé
+    row += 2
+    worksheet.merge_range(f'A{row}:B{row}', 'Prepared by', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', 'Approved by', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', 'Received', merge_format)
+
+    row += 1
+    worksheet.merge_range(f'A{row}:B{row}', '', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', '', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', '', merge_format)
+    
+    row += 1
+    worksheet.merge_range(f'A{row}:B{row}', 'Piping Engg.', merge_format)
+    worksheet.merge_range(f'C{row}:D{row}', 'J/C Co-Ordinator', merge_format)
+    worksheet.merge_range(f'E{row}:L{row}', 'Spooling Vendor : EJA', merge_format)
+   
+    row += 1
+    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
+    worksheet.write(f'F{row}', 'CC', merge_format)
+    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
+    
+    row += 1
+    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
+    worksheet.merge_range(f'F{row}:F{row}', '', merge_format)
+    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
+
+    row += 1
+    worksheet.merge_range(f'A{row}:L{row}', '', merge_format)   
+
+    workbook.close()
+    output.seek(0)
+
+    return output
+
 def next_step(step):
     st.session_state.step = step
     st.experimental_set_query_params(step=step)
@@ -190,7 +287,7 @@ def main():
     elif st.session_state.step == 2:
         if st.session_state.authenticated:
             upload_page()
-            if st.session_state.get('sgs_df') is not None:
+            if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
                 st.button('Next', on_click=next_step, args=(3,))
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
@@ -212,18 +309,23 @@ def login_page():
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
-    uploaded_file = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
-    if uploaded_file is not None:
-        sgs_df = process_excel_data(uploaded_file)
-        if sgs_df is not None:
+    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
+    if uploaded_file_sgs is not None and uploaded_file_drawing is not None:
+        sgs_df = process_excel_data(uploaded_file_sgs)
+        drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+        if sgs_df is not None and drawing_df is not None:
             st.session_state.sgs_df = sgs_df
-            st.session_state.uploaded_file = uploaded_file
+            st.session_state.drawing_df = drawing_df
+            st.session_state.uploaded_file_sgs = uploaded_file_sgs
+            st.session_state.uploaded_file_drawing = uploaded_file_drawing
             st.session_state.step = 3
-            st.success("File processed successfully.")
+            st.success("Files processed successfully.")
             st.experimental_set_query_params(step=3)
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
+    drawing_df = st.session_state.drawing_df
     st.title('Job Card Generator')
     jc_number = st.text_input('JC Number')
     issue_date = st.date_input('Issue Date')
@@ -236,17 +338,24 @@ def job_card_info_page():
         st.session_state.spools = '\n'.join(unique_spools)
         st.text_area(spool_label, value=st.session_state.spools, height=100, key="spools_display", disabled=True)
 
-    if st.button(f"Create Job Card ({jc_number})"):
+    if st.button(f"Create Job Cards ({jc_number})"):
         if not jc_number or not issue_date or not area or not spools:
             st.error('All fields must be filled out.')
         else:
             formatted_issue_date = issue_date.strftime('%d/%m/%Y')
-            excel_data = generate_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
-            st.success("Job Card created successfully.")
+            spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, st.session_state.spools, sgs_df)
+            material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df)
+            st.success("Job Cards created successfully.")
             st.download_button(
-                label="Download Job Card",
-                data=excel_data.getvalue(),
-                file_name=f"JobCard_{jc_number}.xlsx",
+                label="Download Job Card Spools",
+                data=spools_excel.getvalue(),
+                file_name=f"JobCard_{jc_number}_Spools.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            st.download_button(
+                label="Download Job Card Material",
+                data=material_excel.getvalue(),
+                file_name=f"JobCard_{jc_number}_Material.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
