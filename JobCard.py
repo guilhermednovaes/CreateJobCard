@@ -20,7 +20,7 @@ def authenticate(username, password):
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
-        df = df.iloc[1:]
+        df = df.iloc(1:)
         df = df.reset_index(drop=True)
         return df
     except Exception as e:
@@ -366,8 +366,9 @@ def job_card_info_page():
             st.session_state.material_excel = material_excel
             st.session_state.jc_number = jc_number
             st.success("Job Cards created successfully.")
-            st.session_state.step = 4
-            st.experimental_set_query_params(step=4)
+            if st.button('Next'):
+                st.session_state.step = 4
+                st.experimental_set_query_params(step=4)
 
 def download_page():
     st.title('Job Card Generator - Download')
