@@ -325,8 +325,6 @@ def main():
                 first_access_page()
             else:
                 upload_page()
-                if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
-                    st.button('Next', on_click=next_step, args=(3,))
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
             job_card_info_page()
@@ -387,13 +385,17 @@ def upload_page():
             st.session_state.drawing_df = drawing_df
             st.session_state.uploaded_file_sgs = uploaded_file_sgs
             st.session_state.uploaded_file_drawing = uploaded_file_drawing
-            st.session_state.step = 3
             st.success("Files processed successfully.")
             st.button('Next', on_click=next_step, args=(3,))
 
 def job_card_info_page():
+    if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
+        st.error("No data available. Please go back and upload the files.")
+        return
+
     sgs_df = st.session_state.sgs_df
     drawing_df = st.session_state.drawing_df
+
     st.title('Job Card Generator')
     jc_number = st.text_input('JC Number')
     issue_date = st.date_input('Issue Date')
