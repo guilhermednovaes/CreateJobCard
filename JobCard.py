@@ -5,7 +5,6 @@ from io import BytesIO
 import logging
 import os
 import requests
-from datetime import date
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 PASSWORD_FILE = 'password.txt'
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
-GITHUB_TOKEN = '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'
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = 'guilhermednovaes/CreateJobCard'
 BRANCH = 'main'
 
@@ -40,7 +39,12 @@ def update_github_file(filepath, message):
 
     response = requests.get(url, headers=headers)
     response_data = response.json()
-    sha = response_data['sha']
+    
+    if response.status_code == 200:
+        sha = response_data['sha']
+    else:
+        st.error(f"Erro ao obter SHA para {filepath}: {response.json()}")
+        return
 
     data = {
         'message': message,
