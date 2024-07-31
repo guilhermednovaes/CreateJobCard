@@ -364,12 +364,14 @@ def job_card_info_page():
             material_excel = generate_material_template(jc_number, formatted_issue_date, area, drawing_df, st.session_state.spools)
             st.session_state.spools_excel = spools_excel
             st.session_state.material_excel = material_excel
+            st.session_state.jc_number = jc_number
             st.success("Job Cards created successfully.")
             st.session_state.step = 4
             st.experimental_set_query_params(step=4)
 
 def download_page():
     st.title('Job Card Generator - Download')
+    jc_number = st.session_state.jc_number
     st.download_button(
         label="Download Job Card Spools",
         data=st.session_state.spools_excel.getvalue(),
