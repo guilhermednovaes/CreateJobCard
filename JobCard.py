@@ -157,9 +157,7 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
-    # Remova linhas adicionais após o rodapé
-    row += 1
-    worksheet.set_row(row, None)  # Defina a altura da linha para None para remover qualquer formatação adicional
+    # Aplicar formatação apenas até a linha do "CC"
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
 
@@ -266,9 +264,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
-    # Remova linhas adicionais após o rodapé
-    row += 1
-    worksheet.set_row(row, None)  # Defina a altura da linha para None para remover qualquer formatação adicional
+    # Aplicar formatação apenas até a linha do "CC"
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
 
