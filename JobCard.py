@@ -343,9 +343,11 @@ def login_page():
             st.session_state.authenticated = True
             st.session_state.username = username
             st.session_state.password = password
-            st.session_state.step = 2
             st.success("Login successful")
-            st.experimental_set_query_params(step=2)
+            if password == '123':
+                st.button('Next', on_click=next_step, args=(2,))
+            else:
+                st.button('Next', on_click=next_step, args=(3,))
         else:
             st.error('Invalid username or password')
 
@@ -370,8 +372,7 @@ def first_access_page():
             save_credentials(new_credentials)
             st.success('Password changed successfully.')
             st.session_state.password = new_password
-            next_step(2)
-    st.button('Next', on_click=next_step, args=(2,))
+            st.button('Next', on_click=next_step, args=(3,))
 
 def upload_page():
     st.title('Job Card Generator')
@@ -388,8 +389,7 @@ def upload_page():
             st.session_state.uploaded_file_drawing = uploaded_file_drawing
             st.session_state.step = 3
             st.success("Files processed successfully.")
-            st.experimental_set_query_params(step=3)
-    st.button('Next', on_click=next_step, args=(3,))
+            st.button('Next', on_click=next_step, args=(3,))
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
