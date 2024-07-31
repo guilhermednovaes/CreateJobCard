@@ -370,8 +370,18 @@ def upload_page():
     use_db_sgs = st.checkbox("Use Database SGS File", value=False)
     use_db_drawing = st.checkbox("Use Database Drawing Part List File", value=False)
 
-    uploaded_file_sgs = None if use_db_sgs else st.file_uploader('Upload SGS Excel file', type=['xlsx'])
-    uploaded_file_drawing = None if use_db_drawing else st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
+    if not use_db_sgs:
+        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+    else:
+        uploaded_file_sgs = None
+
+    if not use_db_drawing:
+        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
+    else:
+        uploaded_file_drawing = None
+
+    sgs_df = None
+    drawing_df = None
 
     if use_db_sgs:
         sgs_df = pd.read_excel(SGS_FILE, sheet_name='Spool', header=9).dropna(how='all').iloc[1:].reset_index(drop=True)
