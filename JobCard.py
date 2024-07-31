@@ -308,7 +308,8 @@ def main():
         if st.session_state.authenticated:
             job_card_info_page()
     elif st.session_state.step == 4:
-        download_page()
+        if st.session_state.authenticated:
+            download_page()
 
 def login_page():
     st.title('Job Card Generator - Login')
@@ -366,12 +367,14 @@ def job_card_info_page():
             st.session_state.material_excel = material_excel
             st.session_state.jc_number = jc_number
             st.success("Job Cards created successfully.")
-            if st.button('Next'):
-                st.session_state.step = 4
-                st.experimental_set_query_params(step=4)
+            st.button('Next', on_click=next_step, args=(4,))
 
 def download_page():
     st.title('Job Card Generator - Download')
+    if 'jc_number' not in st.session_state:
+        st.error("No job cards generated. Please go back and complete the previous steps.")
+        return
+
     jc_number = st.session_state.jc_number
     st.download_button(
         label="Download Job Card Spools",
@@ -387,6 +390,7 @@ def download_page():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         key='download_material'
     )
+    st.button("Back", on_click=next_step, args=(3,))
 
 if __name__ == "__main__":
     main()
