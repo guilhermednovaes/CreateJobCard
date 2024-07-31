@@ -156,14 +156,12 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
-    
-    row += 1
-    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
-    worksheet.merge_range(f'F{row}:F{row}', '', merge_format)
-    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
+    # Remova linhas adicionais após o rodapé
     row += 1
-    worksheet.merge_range(f'A{row}:L{row}', '', merge_format)   
+    worksheet.set_row(row, None)  # Defina a altura da linha para None para remover qualquer formatação adicional
+    worksheet.set_row(row + 1, None)
+    worksheet.set_row(row + 2, None)
 
     workbook.close()
     output.seek(0)
@@ -267,14 +265,12 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
-    
-    row += 1
-    worksheet.merge_range(f'A{row}:E{row}', '', merge_format)
-    worksheet.merge_range(f'F{row}:F{row}', '', merge_format)
-    worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
+    # Remova linhas adicionais após o rodapé
     row += 1
-    worksheet.merge_range(f'A{row}:L{row}', '', merge_format)   
+    worksheet.set_row(row, None)  # Defina a altura da linha para None para remover qualquer formatação adicional
+    worksheet.set_row(row + 1, None)
+    worksheet.set_row(row + 2, None)
 
     workbook.close()
     output.seek(0)
