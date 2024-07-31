@@ -26,8 +26,6 @@ def save_credentials(credentials):
         for username, password in credentials:
             file.write(f'USERNAME = {username}\n')
             file.write(f'PASSWORD = {password}\n')
-
-    # Se estiver rodando em um ambiente Git, adicione o commit das mudanças
     os.system(f"git add {PASSWORD_FILE}")
     os.system(f'git commit -m "Update password for {credentials[0][0]}"')
     os.system("git push")
@@ -82,12 +80,10 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
 
     merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    # Definir as larguras das colunas e ativar quebra de texto
-    col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 13.86, 'L': 13.140625}
+    col_widths = {'A': 9.14, 'B': 11.0, 'C': 35.57, 'D': 9.14, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.71, 'J': 17.71, 'K': 13.86, 'L': 13.14}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
-    # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
     for row, height in header_footer_row_heights.items():
         worksheet.set_row(row - 1, height)
@@ -98,7 +94,6 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.merge_range('D3:H3', 'Request For Fabrication', merge_format)
     worksheet.merge_range('I1:L3', '', merge_format)
 
-    # Inserção das Imagens
     worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
 
@@ -121,7 +116,6 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     for idx, spool in enumerate(spools_list):
         sgs_row = sgs_df[sgs_df['PF Code'] == spool.strip()].iloc[0] if not sgs_df[sgs_df['PF Code'] == spool.strip()].empty else {}
         
-        # Garantir que todos os valores são do tipo esperado
         try:
             module = str(sgs_row.get('Módulo', ''))
             size = str(sgs_row.get('Diam. Polegadas', ''))
@@ -153,15 +147,12 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
         worksheet.write_row(row, col, data, cell_wrap_format)
         row += 1
 
-    # Definir a altura das linhas da tabela e do cabeçalho
     for r in range(8, row):
         worksheet.set_row(r, 30)
 
-    # Linha do total de peso
     worksheet.merge_range(f'A{row+1}:F{row+1}', 'Total Weight: (Kg)', merge_format)
     worksheet.merge_range(f'G{row+1}:L{row+1}', total_weight, merge_format)
 
-    # Linhas de rodapé
     row += 2
     worksheet.merge_range(f'A{row}:B{row}', 'Prepared by', merge_format)
     worksheet.merge_range(f'C{row}:D{row}', 'Approved by', merge_format)
@@ -182,11 +173,9 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
-    # Aplicar formatação apenas até a linha do "CC"
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
 
-    # Configurações de impressão
     apply_print_settings(worksheet, header_row=8)
 
     workbook.close()
@@ -201,12 +190,10 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    # Definir as larguras das colunas específicas
-    col_widths = {'A': 35.5703125, 'B': 13.0, 'C': 22.28515625, 'D': 9.140625, 'E': 13.0, 'F': 46.42578125, 'G': 9.140625, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
+    col_widths = {'A': 35.57, 'B': 13.0, 'C': 22.28, 'D': 9.14, 'E': 13.0, 'F': 46.42, 'G': 9.14, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
-    # Definir as alturas das linhas antes e depois da tabela
     header_footer_row_heights = {1: 47.25, 2: 47.25, 3: 47.25}
     for row, height in header_footer_row_heights.items():
         worksheet.set_row(row - 1, height)
@@ -217,7 +204,6 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     worksheet.merge_range('D3:H3', 'Material Pick Ticket SpoolWise', merge_format)
     worksheet.merge_range('I1:L3', '', merge_format)
 
-    # Inserção das Imagens
     worksheet.insert_image('A1', 'Logo/BR.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
     worksheet.insert_image('I1', 'Logo/Seatrium.png', {'x_offset': 80, 'y_offset': 10, 'x_scale': 1, 'y_scale': 1})
 
@@ -267,11 +253,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
         worksheet.write_row(row, col, data, cell_wrap_format)
         row += 1
 
-    # Definir a altura das linhas da tabela e do cabeçalho
     for r in range(8, row):
         worksheet.set_row(r, 30)
 
-    # Linhas de rodapé
     row += 2
     worksheet.merge_range(f'A{row}:B{row}', 'Prepared by', merge_format)
     worksheet.merge_range(f'C{row}:D{row}', 'Approved by', merge_format)
@@ -292,11 +276,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     worksheet.write(f'F{row}', 'CC', merge_format)
     worksheet.merge_range(f'G{row}:L{row}', '', merge_format)
 
-    # Aplicar formatação apenas até a linha do "CC"
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
 
-    # Configurações de impressão
     apply_print_settings(worksheet, header_row=8)
 
     workbook.close()
@@ -369,13 +351,12 @@ def first_access_page():
         elif new_password == '123':
             st.error('The new password cannot be "123".')
         else:
-            # Update the password in the credentials
             credentials = load_credentials()
             new_credentials = [(user, new_password if user == st.session_state.username else passw) for user, passw in credentials]
             save_credentials(new_credentials)
             st.success('Password changed successfully.')
             st.session_state.password = new_password
-            st.button('Next', on_click=next_step, args=(3,))  # Alterado para (3,) para ir para a página de upload
+            st.button('Next', on_click=next_step, args=(3,))
 
 def upload_page():
     st.title('Job Card Generator')
