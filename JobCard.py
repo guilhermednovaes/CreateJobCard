@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 PASSWORD_FILE = 'password.txt'
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+GITHUB_TOKEN = st.secrets.get("GITHUB_TOKEN")
 REPO = 'guilhermednovaes/CreateJobCard'
 BRANCH = 'main'
 
@@ -43,7 +43,7 @@ def update_github_file(filepath, message):
     if response.status_code == 200:
         sha = response_data['sha']
     else:
-        st.error(f"Erro ao obter SHA para {filepath}: {response.json()}")
+        st.error(f"Erro ao obter SHA para {filepath}: {response_data}")
         return
 
     data = {
@@ -407,15 +407,14 @@ def upload_page():
     use_db_sgs = st.checkbox("Use Database SGS File", value=False)
     use_db_drawing = st.checkbox("Use Database Drawing Part List File", value=False)
 
+    uploaded_file_sgs = None
+    uploaded_file_drawing = None
+
     if not use_db_sgs:
         uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
-    else:
-        uploaded_file_sgs = None
 
     if not use_db_drawing:
         uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
-    else:
-        uploaded_file_drawing = None
 
     sgs_df = None
     drawing_df = None
