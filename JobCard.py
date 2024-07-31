@@ -14,7 +14,7 @@ SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = 'guilhermednovaes/CreateJobCard'
-BRANCH = 'main'
+BRANCH = 'JobCard.py'
 
 def load_credentials():
     credentials = []
