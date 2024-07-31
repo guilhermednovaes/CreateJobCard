@@ -391,6 +391,7 @@ def upload_page():
 def job_card_info_page():
     if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
         st.error("No data available. Please go back and upload the files.")
+        st.button('Back', on_click=next_step, args=(2,))
         return
 
     sgs_df = st.session_state.sgs_df
