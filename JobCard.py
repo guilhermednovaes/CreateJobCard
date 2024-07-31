@@ -9,6 +9,8 @@ import os
 logging.basicConfig(level=logging.INFO)
 
 PASSWORD_FILE = 'password.txt'
+SGS_FILE = 'SGS.xlsx'
+DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
 
 def load_credentials():
     credentials = []
@@ -308,11 +310,14 @@ def main():
         login_page()
     elif st.session_state.step == 2:
         if st.session_state.authenticated:
-            upload_page()
+            first_access_page()
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
-            job_card_info_page()
+            upload_page()
     elif st.session_state.step == 4:
+        if st.session_state.authenticated:
+            job_card_info_page()
+    elif st.session_state.step == 5:
         if st.session_state.authenticated:
             download_page()
 
@@ -330,7 +335,7 @@ def login_page():
                 st.experimental_set_query_params(step=2)
                 st.warning("Your password is default '123'. Please change it.")
             else:
-                st.experimental_set_query_params(step=2)
+                st.experimental_set_query_params(step=3)
         else:
             st.error('Invalid username or password')
 
@@ -354,28 +359,49 @@ def first_access_page():
             save_credentials(new_credentials)
             st.success('Password changed successfully.')
             st.session_state.password = new_password
-            st.experimental_set_query_params(step=2)
+            st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
-    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
-    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
-    if uploaded_file_sgs is not None and uploaded_file_drawing is not None:
+
+    use_db_sgs = st.checkbox("Use Database SGS File", value=False)
+    use_db_drawing = st.checkbox("Use Database Drawing Part List File", value=False)
+
+    uploaded_file_sgs = None if use_db_sgs else st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+    uploaded_file_drawing = None if use_db_drawing else st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
+
+    if use_db_sgs:
+        sgs_df = pd.read_excel(SGS_FILE, sheet_name='Spool', header=9).dropna(how='all').iloc[1:].reset_index(drop=True)
+        st.success("Using SGS file from database.")
+    elif uploaded_file_sgs is not None:
         sgs_df = process_excel_data(uploaded_file_sgs)
+
+    if use_db_drawing:
+        drawing_df = pd.read_excel(DRAWING_PART_LIST_FILE, sheet_name='Sheet1', header=0)
+        st.success("Using Drawing Part List file from database.")
+    elif uploaded_file_drawing is not None:
         drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-        if sgs_df is not None and drawing_df is not None:
-            st.session_state.sgs_df = sgs_df
-            st.session_state.drawing_df = drawing_df
-            st.session_state.uploaded_file_sgs = uploaded_file_sgs
-            st.session_state.uploaded_file_drawing = uploaded_file_drawing
-            st.success("Files processed successfully.")
-            st.button('Next', on_click=next_step, args=(3,))
+
+    if (use_db_sgs or uploaded_file_sgs is not None) and (use_db_drawing or uploaded_file_drawing is not None):
+        st.session_state.sgs_df = sgs_df
+        st.session_state.drawing_df = drawing_df
+        st.session_state.uploaded_file_sgs = uploaded_file_sgs
+        st.session_state.uploaded_file_drawing = uploaded_file_drawing
+        if uploaded_file_sgs:
+            sgs_df.to_excel(SGS_FILE, index=False)
+        if uploaded_file_drawing:
+            drawing_df.to_excel(DRAWING_PART_LIST_FILE, index=False)
+        os.system(f"git add {SGS_FILE} {DRAWING_PART_LIST_FILE}")
+        os.system('git commit -m "Update SGS and Drawing Part List files"')
+        os.system("git push")
+        st.success("Files processed successfully.")
+        st.button('Next', on_click=next_step, args=(4,))
 
 def job_card_info_page():
     if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
         st.error("No data available. Please go back and upload the files.")
-        st.button('Back', on_click=next_step, args=(2,))
+        st.button('Back', on_click=next_step, args=(3,))
         return
 
     sgs_df = st.session_state.sgs_df
@@ -404,13 +430,13 @@ def job_card_info_page():
             st.session_state.material_excel = material_excel
             st.session_state.jc_number = jc_number
             st.success("Job Cards created successfully.")
-            st.button('Next', on_click=next_step, args=(4,))
+            st.button('Next', on_click=next_step, args=(5,))
 
 def download_page():
     st.title('Job Card Generator - Download')
     if 'jc_number' not in st.session_state:
         st.error("No job cards generated. Please go back and complete the previous steps.")
-        st.button('Back', on_click=next_step, args=(3,))
+        st.button('Back', on_click=next_step, args=(4,))
         return
 
     jc_number = st.session_state.jc_number
@@ -428,7 +454,7 @@ def download_page():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         key='download_material'
     )
-    st.button("Back", on_click=next_step, args=(3,))
+    st.button("Back", on_click=next_step, args=(4,))
 
 if __name__ == "__main__":
     main()
