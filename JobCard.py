@@ -310,6 +310,8 @@ def main():
         st.session_state.authenticated = False
     if 'username' not in st.session_state:
         st.session_state.username = ""
+    if 'password' not in st.session_state:
+        st.session_state.password = ""
 
     query_params = st.experimental_get_query_params()
     if 'step' in query_params:
@@ -352,6 +354,7 @@ def first_access_page():
     st.write("Your current password is '123'. Please change it to a new password.")
     
     current_password = '123'
+    st.text_input('Current Password', type='password', value=current_password, disabled=True)
     new_password = st.text_input('New Password', type='password')
     confirm_password = st.text_input('Confirm New Password', type='password')
 
@@ -368,6 +371,7 @@ def first_access_page():
             st.success('Password changed successfully.')
             st.session_state.password = new_password
             next_step(2)
+    st.button('Next', on_click=next_step, args=(2,))
 
 def upload_page():
     st.title('Job Card Generator')
@@ -385,6 +389,7 @@ def upload_page():
             st.session_state.step = 3
             st.success("Files processed successfully.")
             st.experimental_set_query_params(step=3)
+    st.button('Next', on_click=next_step, args=(3,))
 
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
