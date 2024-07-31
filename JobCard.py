@@ -50,6 +50,11 @@ def create_formats(workbook):
 
     return merge_format, header_format, cell_wrap_format
 
+def apply_print_settings(worksheet, header_row):
+    worksheet.fit_to_pages(1, 0)  # Fit to 1 page wide, no limit on height
+    worksheet.repeat_rows(header_row - 1)  # Repeat the header row
+    worksheet.set_print_scale(100)  # Set print scale to 100%
+
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -161,6 +166,9 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
 
+    # Configurações de impressão
+    apply_print_settings(worksheet, header_row=8)
+
     workbook.close()
     output.seek(0)
 
@@ -267,6 +275,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     # Aplicar formatação apenas até a linha do "CC"
     worksheet.set_row(row + 1, None)
     worksheet.set_row(row + 2, None)
+
+    # Configurações de impressão
+    apply_print_settings(worksheet, header_row=8)
 
     workbook.close()
     output.seek(0)
