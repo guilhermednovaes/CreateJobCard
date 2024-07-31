@@ -4,6 +4,8 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import os
+import requests
+from datetime import date
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -11,6 +13,9 @@ logging.basicConfig(level=logging.INFO)
 PASSWORD_FILE = 'password.txt'
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
+GITHUB_TOKEN = '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'
+REPO = 'guilhermednovaes/CreateJobCard'
+BRANCH = 'main'
 
 def load_credentials():
     credentials = []
@@ -23,14 +28,40 @@ def load_credentials():
                 credentials.append((username, password))
     return credentials
 
+def update_github_file(filepath, message):
+    with open(filepath, 'r') as file:
+        content = file.read()
+
+    url = f'https://api.github.com/repos/{REPO}/contents/{filepath}'
+    headers = {
+        'Authorization': f'token {GITHUB_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+    response_data = response.json()
+    sha = response_data['sha']
+
+    data = {
+        'message': message,
+        'content': content.encode('utf-8').decode('utf-8'),
+        'sha': sha,
+        'branch': BRANCH
+    }
+
+    response = requests.put(url, headers=headers, json=data)
+    if response.status_code == 200:
+        st.success(f'{filepath} atualizado no GitHub.')
+    else:
+        st.error(f'Erro ao atualizar {filepath} no GitHub: {response.json()}')
+
 def save_credentials(credentials):
     with open(PASSWORD_FILE, 'w') as file:
         for username, password in credentials:
             file.write(f'USERNAME = {username}\n')
             file.write(f'PASSWORD = {password}\n')
-    os.system(f"git add {PASSWORD_FILE}")
-    os.system(f'git commit -m "Update password for {credentials[0][0]}"')
-    os.system("git push")
+
+    update_github_file(PASSWORD_FILE, "Update password file")
 
 def authenticate(username, password):
     username = username.lower()
@@ -306,6 +337,8 @@ def main():
     if 'step' in query_params:
         st.session_state.step = int(query_params['step'][0])
 
+    progress_bar = st.progress(st.session_state.step / 5)
+
     if st.session_state.step == 1:
         login_page()
     elif st.session_state.step == 2:
@@ -413,11 +446,10 @@ def upload_page():
             st.session_state.uploaded_file_drawing = uploaded_file_drawing
             if uploaded_file_sgs:
                 sgs_df.to_excel(SGS_FILE, index=False)
+                update_github_file(SGS_FILE, "Update SGS file")
             if uploaded_file_drawing:
                 drawing_df.to_excel(DRAWING_PART_LIST_FILE, index=False)
-            os.system(f"git add {SGS_FILE} {DRAWING_PART_LIST_FILE}")
-            os.system('git commit -m "Update SGS and Drawing Part List files"')
-            os.system("git push")
+                update_github_file(DRAWING_PART_LIST_FILE, "Update Drawing Part List file")
             st.success("Files processed successfully.")
             st.button('Next', on_click=next_step, args=(4,))
 
