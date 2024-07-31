@@ -336,6 +336,7 @@ def login_page():
                 st.warning("Your password is default '123'. Please change it.")
             else:
                 st.experimental_set_query_params(step=3)
+            st.button('Next', on_click=next_step, args=(2 if password == '123' else 3,))
         else:
             st.error('Invalid username or password')
 
@@ -360,6 +361,7 @@ def first_access_page():
             st.success('Password changed successfully.')
             st.session_state.password = new_password
             st.experimental_set_query_params(step=3)
+            st.button('Next', on_click=next_step, args=(3,))
 
 def upload_page():
     st.title('Job Card Generator')
