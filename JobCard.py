@@ -27,6 +27,11 @@ def save_credentials(credentials):
             file.write(f'USERNAME = {username}\n')
             file.write(f'PASSWORD = {password}\n')
 
+    # Se estiver rodando em um ambiente Git, adicione o commit das mudanças
+    os.system(f"git add {PASSWORD_FILE}")
+    os.system(f'git commit -m "Update password for {credentials[0][0]}"')
+    os.system("git push")
+
 def authenticate(username, password):
     username = username.lower()
     credentials = load_credentials()
@@ -370,7 +375,7 @@ def first_access_page():
             save_credentials(new_credentials)
             st.success('Password changed successfully.')
             st.session_state.password = new_password
-            st.button('Next', on_click=next_step, args=(3,))
+            st.button('Next', on_click=next_step, args=(3,))  # Alterado para (3,) para ir para a página de upload
 
 def upload_page():
     st.title('Job Card Generator')
@@ -426,6 +431,7 @@ def download_page():
     st.title('Job Card Generator - Download')
     if 'jc_number' not in st.session_state:
         st.error("No job cards generated. Please go back and complete the previous steps.")
+        st.button('Back', on_click=next_step, args=(3,))
         return
 
     jc_number = st.session_state.jc_number
