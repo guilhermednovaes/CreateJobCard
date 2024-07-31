@@ -15,9 +15,10 @@ def load_credentials():
     with open(PASSWORD_FILE, 'r') as file:
         lines = file.readlines()
         for i in range(0, len(lines), 2):
-            username = lines[i].strip().split('=')[1].strip()
-            password = lines[i+1].strip().split('=')[1].strip()
-            credentials.append((username, password))
+            if '=' in lines[i] and '=' in lines[i+1]:
+                username = lines[i].strip().split('=')[1].strip()
+                password = lines[i+1].strip().split('=')[1].strip()
+                credentials.append((username, password))
     return credentials
 
 def save_credentials(credentials):
