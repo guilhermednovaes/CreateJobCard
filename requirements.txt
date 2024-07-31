@@ -3,6 +3,4 @@ pandas
 xlsxwriter
 openpyxl
 xlsxwriter
-logging
-os
 requests
