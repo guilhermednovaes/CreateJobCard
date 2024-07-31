@@ -384,31 +384,42 @@ def upload_page():
     drawing_df = None
 
     if use_db_sgs:
-        sgs_df = pd.read_excel(SGS_FILE, sheet_name='Spool', header=9).dropna(how='all').iloc[1:].reset_index(drop=True)
-        st.success("Using SGS file from database.")
+        try:
+            sgs_df = pd.read_excel(SGS_FILE, sheet_name='Spool', header=9).dropna(how='all').iloc[1:].reset_index(drop=True)
+            st.success("Using SGS file from database.")
+        except Exception as e:
+            st.error(f"Erro ao carregar SGS file from database: {e}")
+            logging.error(f"Erro ao carregar SGS file from database: {e}")
+
     elif uploaded_file_sgs is not None:
         sgs_df = process_excel_data(uploaded_file_sgs)
 
     if use_db_drawing:
-        drawing_df = pd.read_excel(DRAWING_PART_LIST_FILE, sheet_name='Sheet1', header=0)
-        st.success("Using Drawing Part List file from database.")
+        try:
+            drawing_df = pd.read_excel(DRAWING_PART_LIST_FILE, sheet_name='Sheet1', header=0)
+            st.success("Using Drawing Part List file from database.")
+        except Exception as e:
+            st.error(f"Erro ao carregar Drawing Part List file from database: {e}")
+            logging.error(f"Erro ao carregar Drawing Part List file from database: {e}")
+
     elif uploaded_file_drawing is not None:
         drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
 
     if (use_db_sgs or uploaded_file_sgs is not None) and (use_db_drawing or uploaded_file_drawing is not None):
-        st.session_state.sgs_df = sgs_df
-        st.session_state.drawing_df = drawing_df
-        st.session_state.uploaded_file_sgs = uploaded_file_sgs
-        st.session_state.uploaded_file_drawing = uploaded_file_drawing
-        if uploaded_file_sgs:
-            sgs_df.to_excel(SGS_FILE, index=False)
-        if uploaded_file_drawing:
-            drawing_df.to_excel(DRAWING_PART_LIST_FILE, index=False)
-        os.system(f"git add {SGS_FILE} {DRAWING_PART_LIST_FILE}")
-        os.system('git commit -m "Update SGS and Drawing Part List files"')
-        os.system("git push")
-        st.success("Files processed successfully.")
-        st.button('Next', on_click=next_step, args=(4,))
+        if sgs_df is not None and drawing_df is not None:
+            st.session_state.sgs_df = sgs_df
+            st.session_state.drawing_df = drawing_df
+            st.session_state.uploaded_file_sgs = uploaded_file_sgs
+            st.session_state.uploaded_file_drawing = uploaded_file_drawing
+            if uploaded_file_sgs:
+                sgs_df.to_excel(SGS_FILE, index=False)
+            if uploaded_file_drawing:
+                drawing_df.to_excel(DRAWING_PART_LIST_FILE, index=False)
+            os.system(f"git add {SGS_FILE} {DRAWING_PART_LIST_FILE}")
+            os.system('git commit -m "Update SGS and Drawing Part List files"')
+            os.system("git push")
+            st.success("Files processed successfully.")
+            st.button('Next', on_click=next_step, args=(4,))
 
 def job_card_info_page():
     if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
