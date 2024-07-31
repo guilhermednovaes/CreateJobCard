@@ -8,14 +8,28 @@ import os
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
+PASSWORD_FILE = 'password.txt'
+
+def load_credentials():
+    credentials = []
+    with open(PASSWORD_FILE, 'r') as file:
+        lines = file.readlines()
+        for i in range(0, len(lines), 2):
+            username = lines[i].strip().split('=')[1].strip()
+            password = lines[i+1].strip().split('=')[1].strip()
+            credentials.append((username, password))
+    return credentials
+
+def save_credentials(credentials):
+    with open(PASSWORD_FILE, 'w') as file:
+        for username, password in credentials:
+            file.write(f'USERNAME = {username}\n')
+            file.write(f'PASSWORD = {password}\n')
+
 def authenticate(username, password):
     username = username.lower()
-    valid_users = [
-        (os.getenv('USERNAME1', '').lower(), os.getenv('PASSWORD1', '')),
-        (os.getenv('USERNAME2', '').lower(), os.getenv('PASSWORD2', '')),
-        (os.getenv('USERNAME3', '').lower(), os.getenv('PASSWORD3', ''))
-    ]
-    return (username, password) in valid_users
+    credentials = load_credentials()
+    return (username, password) in credentials
 
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
@@ -293,6 +307,8 @@ def main():
         st.session_state.step = 1
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
+    if 'username' not in st.session_state:
+        st.session_state.username = ""
 
     query_params = st.experimental_get_query_params()
     if 'step' in query_params:
@@ -300,13 +316,14 @@ def main():
 
     if st.session_state.step == 1:
         login_page()
-        if st.session_state.get('authenticated'):
-            st.button('Next', on_click=next_step, args=(2,))
     elif st.session_state.step == 2:
         if st.session_state.authenticated:
-            upload_page()
-            if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
-                st.button('Next', on_click=next_step, args=(3,))
+            if st.session_state.password == '123':
+                first_access_page()
+            else:
+                upload_page()
+                if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
+                    st.button('Next', on_click=next_step, args=(3,))
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
             job_card_info_page()
@@ -321,11 +338,35 @@ def login_page():
     if st.button('Login'):
         if authenticate(username, password):
             st.session_state.authenticated = True
+            st.session_state.username = username
+            st.session_state.password = password
             st.session_state.step = 2
             st.success("Login successful")
             st.experimental_set_query_params(step=2)
         else:
             st.error('Invalid username or password')
+
+def first_access_page():
+    st.title('First Access - Change Password')
+    st.write("Your current password is '123'. Please change it to a new password.")
+    
+    current_password = '123'
+    new_password = st.text_input('New Password', type='password')
+    confirm_password = st.text_input('Confirm New Password', type='password')
+
+    if st.button('Change Password'):
+        if new_password != confirm_password:
+            st.error('The new passwords do not match.')
+        elif new_password == '123':
+            st.error('The new password cannot be "123".')
+        else:
+            # Update the password in the credentials
+            credentials = load_credentials()
+            new_credentials = [(user, new_password if user == st.session_state.username else passw) for user, passw in credentials]
+            save_credentials(new_credentials)
+            st.success('Password changed successfully.')
+            st.session_state.password = new_password
+            next_step(2)
 
 def upload_page():
     st.title('Job Card Generator')
