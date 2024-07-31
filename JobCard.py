@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 PASSWORD_FILE = 'password.txt'
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
-GITHUB_TOKEN = st.secrets.get("GITHUB_TOKEN")
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = 'guilhermednovaes/CreateJobCard'
 BRANCH = 'main'
 
