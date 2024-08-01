@@ -4,7 +4,7 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import os
-from github import Github
+from github import Github, GithubException
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -28,15 +28,19 @@ def load_credentials():
     return credentials
 
 def update_github_file(filepath, message):
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(REPO)
-    file = repo.get_contents(filepath, ref=BRANCH)
+    try:
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_repo(REPO)
+        file = repo.get_contents(filepath, ref=BRANCH)
 
-    with open(filepath, 'r') as f:
-        content = f.read()
+        with open(filepath, 'r') as f:
+            content = f.read()
 
-    repo.update_file(file.path, message, content, file.sha, branch=BRANCH)
-    st.success(f'{filepath} atualizado no GitHub.')
+        repo.update_file(file.path, message, content, file.sha, branch=BRANCH)
+        st.success(f'{filepath} atualizado no GitHub.')
+    except GithubException as e:
+        st.error(f"Erro ao atualizar o arquivo no GitHub: {e}")
+        logging.error(f"Erro ao atualizar o arquivo no GitHub: {e}")
 
 def save_credentials(credentials):
     with open(PASSWORD_FILE, 'w') as file:
