@@ -293,15 +293,17 @@ def next_step(step):
 # Página de login
 def login_page():
     st.title('Job Card Generator - Login')
-    username = st.text_input('Username')
-    if st.button('Login'):
-        if authenticate(username):
-            st.session_state.authenticated = True
-            st.session_state.step = 2
-            st.success("Login successful")
-            st.experimental_set_query_params(step=2)
-        else:
-            st.error('Invalid username')
+    username = st.text_input('Username', on_change=authenticate_user)
+    
+def authenticate_user():
+    username = st.session_state.get('username', '')
+    if authenticate(username):
+        st.session_state.authenticated = True
+        st.session_state.step = 2
+        st.experimental_set_query_params(step=2)
+        st.success("Login successful")
+    else:
+        st.error('Invalid username')
 
 # Página de upload
 def upload_page():
