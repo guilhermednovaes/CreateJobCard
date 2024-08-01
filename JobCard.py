@@ -277,7 +277,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 # Páginas do fluxo da aplicação
 def login_page():
     st.title('Job Card Generator - Login')
-    username = st.text_input('Username', on_change=login)
+    username = st.text_input('Username', on_change=login, key='username')
+    if st.session_state.get('auth_error'):
+        st.error(st.session_state.auth_error)
 
 def login():
     if 'username' in st.session_state and authenticate(st.session_state.username):
@@ -285,15 +287,23 @@ def login():
         st.session_state.step = 2
         st.experimental_set_query_params(step=2)
         st.success("Login successful")
+        st.session_state.auth_error = None
     else:
+        st.session_state.auth_error = 'Invalid username'
         st.error('Invalid username')
 
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
 
+    if 'use_sgs_db' not in st.session_state:
+        st.session_state.use_sgs_db = False
+
+    if 'use_drawing_db' not in st.session_state:
+        st.session_state.use_drawing_db = False
+
     use_sgs_db = st.checkbox("Use Database SGS File", key='use_sgs_db')
-    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db')
+    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db', disabled=use_sgs_db)
 
     if use_sgs_db and 'sgs_df' not in st.session_state:
         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
@@ -303,25 +313,27 @@ def upload_page():
         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
         st.success("Using Drawing Part List file from database.")
     
-    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs', disabled=use_sgs_db)
-    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing', disabled=use_drawing_db)
-    
-    if uploaded_file_sgs is not None and not use_sgs_db:
-        sgs_df = process_excel_data(uploaded_file_sgs)
-        if sgs_df is not None:
-            st.session_state.sgs_df = sgs_df
-            st.success("SGS file uploaded successfully.")
+    if not use_sgs_db:
+        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs')
+        if uploaded_file_sgs is not None:
+            sgs_df = process_excel_data(uploaded_file_sgs)
+            if sgs_df is not None:
+                st.session_state.sgs_df = sgs_df
+                st.success("SGS file uploaded successfully.")
 
-    if uploaded_file_drawing is not None and not use_drawing_db:
-        drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-        if drawing_df is not None:
-            st.session_state.drawing_df = drawing_df
-            st.success("Drawing Part List file uploaded successfully.")
+    if not use_drawing_db:
+        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing')
+        if uploaded_file_drawing is not None:
+            drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+            if drawing_df is not None:
+                st.session_state.drawing_df = drawing_df
+                st.success("Drawing Part List file uploaded successfully.")
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
-        st.session_state.step = 3
-        st.experimental_set_query_params(step=3)
-        st.button('Next', on_click=lambda: st.experimental_set_query_params(step=3))
+        if st.button('Next'):
+            st.session_state.step = 3
+            st.experimental_set_query_params(step=3)
+            st.experimental_rerun()
 
 def job_card_info_page():
     st.title('Job Card Generator')
@@ -348,6 +360,7 @@ def job_card_info_page():
             st.success("Job Cards created successfully.")
             st.session_state.step = 4
             st.experimental_set_query_params(step=4)
+            st.experimental_rerun()
     
     if st.button("Clear"):
         st.session_state.jc_number = ''
@@ -379,6 +392,7 @@ def download_page():
     if st.button("Back"):
         st.session_state.step = 3
         st.experimental_set_query_params(step=3)
+        st.experimental_rerun()
 
 # Função principal
 def main():
@@ -402,9 +416,11 @@ def main():
     step_names = ["Login", "Upload Files", "Job Card Info", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
-        if st.sidebar.button(name, key=f"step_{i}"):
-            st.session_state.step = i
-            st.experimental_set_query_params(step=i)
+        if i <= st.session_state.step:
+            if st.sidebar.button(name, key=f"step_{i}"):
+                st.session_state.step = i
+                st.experimental_set_query_params(step=i)
+                st.experimental_rerun()
 
     progress = st.sidebar.progress(0)
     progress.progress(st.session_state.step / len(steps))
