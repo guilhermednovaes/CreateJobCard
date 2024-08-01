@@ -296,8 +296,14 @@ def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
 
+    if 'use_sgs_db' not in st.session_state:
+        st.session_state.use_sgs_db = False
+
+    if 'use_drawing_db' not in st.session_state:
+        st.session_state.use_drawing_db = False
+
     use_sgs_db = st.checkbox("Use Database SGS File", key='use_sgs_db')
-    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db')
+    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db', disabled=use_sgs_db)
 
     if use_sgs_db and 'sgs_df' not in st.session_state:
         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
