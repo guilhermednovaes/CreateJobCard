@@ -177,6 +177,7 @@ def apply_print_settings(worksheet, header_row):
     worksheet.repeat_rows(header_row - 1)  # Repeat the header row
     worksheet.set_print_scale(100)  # Set print scale to 100%
 
+# Funções para gerar templates de Excel
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
