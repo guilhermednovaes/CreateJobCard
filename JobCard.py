@@ -4,7 +4,7 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import os
-import requests
+from github import Github
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +14,7 @@ SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = 'guilhermednovaes/CreateJobCard'
-BRANCH = 'JobCard'
+BRANCH = 'main'
 
 def load_credentials():
     credentials = []
@@ -28,36 +28,15 @@ def load_credentials():
     return credentials
 
 def update_github_file(filepath, message):
-    with open(filepath, 'r') as file:
-        content = file.read()
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(REPO)
+    file = repo.get_contents(filepath, ref=BRANCH)
 
-    url = f'https://api.github.com/repos/{REPO}/contents/{filepath}'
-    headers = {
-        'Authorization': f'token {GITHUB_TOKEN}',
-        'Content-Type': 'application/json'
-    }
+    with open(filepath, 'r') as f:
+        content = f.read()
 
-    response = requests.get(url, headers=headers)
-    response_data = response.json()
-    
-    if response.status_code == 200:
-        sha = response_data['sha']
-    else:
-        st.error(f"Erro ao obter SHA para {filepath}: {response_data}")
-        return
-
-    data = {
-        'message': message,
-        'content': content.encode('utf-8').decode('utf-8'),
-        'sha': sha,
-        'branch': BRANCH
-    }
-
-    response = requests.put(url, headers=headers, json=data)
-    if response.status_code == 200:
-        st.success(f'{filepath} atualizado no GitHub.')
-    else:
-        st.error(f'Erro ao atualizar {filepath} no GitHub: {response.json()}')
+    repo.update_file(file.path, message, content, file.sha, branch=BRANCH)
+    st.success(f'{filepath} atualizado no GitHub.')
 
 def save_credentials(credentials):
     with open(PASSWORD_FILE, 'w') as file:
