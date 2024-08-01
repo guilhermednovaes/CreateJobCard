@@ -307,20 +307,21 @@ def upload_page():
         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
         st.success("Using Drawing Part List file from database.")
     
-    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs', disabled=use_sgs_db)
-    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing', disabled=use_drawing_db)
-    
-    if uploaded_file_sgs is not None and not use_sgs_db:
-        sgs_df = process_excel_data(uploaded_file_sgs)
-        if sgs_df is not None:
-            st.session_state.sgs_df = sgs_df
-            st.success("SGS file uploaded successfully.")
+    if not use_sgs_db:
+        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs')
+        if uploaded_file_sgs is not None:
+            sgs_df = process_excel_data(uploaded_file_sgs)
+            if sgs_df is not None:
+                st.session_state.sgs_df = sgs_df
+                st.success("SGS file uploaded successfully.")
 
-    if uploaded_file_drawing is not None and not use_drawing_db:
-        drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-        if drawing_df is not None:
-            st.session_state.drawing_df = drawing_df
-            st.success("Drawing Part List file uploaded successfully.")
+    if not use_drawing_db:
+        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing')
+        if uploaded_file_drawing is not None:
+            drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+            if drawing_df is not None:
+                st.session_state.drawing_df = drawing_df
+                st.success("Drawing Part List file uploaded successfully.")
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
         st.session_state.step = 3
