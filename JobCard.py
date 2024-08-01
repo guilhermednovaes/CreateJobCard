@@ -399,7 +399,7 @@ def main():
     step_names = ["Login", "Upload Files", "Job Card Info", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
-        if st.session_state.step >= i:
+        if i <= st.session_state.step:
             if st.sidebar.button(name, key=f"step_{i}"):
                 st.session_state.step = i
                 st.experimental_set_query_params(step=i)
