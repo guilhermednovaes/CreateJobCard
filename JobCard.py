@@ -296,17 +296,19 @@ def selection_page():
     st.title('Job Card Generator')
     st.header("Choose an Option")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button('Use Pre-set Database'):
+    if st.button('Use Pre-set Database'):
+        try:
             st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
             st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
             st.session_state.step = 4
             st.experimental_set_query_params(step=4)
-    with col2:
-        if st.button('Upload New Database'):
-            st.session_state.step = 3
-            st.experimental_set_query_params(step=3)
+        except Exception as e:
+            st.error(f"Error loading pre-set databases: {e}")
+            logging.error(f"Error loading pre-set databases: {e}")
+
+    if st.button('Upload New Database'):
+        st.session_state.step = 3
+        st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
