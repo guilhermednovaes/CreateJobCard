@@ -4,11 +4,12 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import os
+from datetime import datetime
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
-# Carregar variáveis de ambiente de forma segura
+# Função para carregar variáveis de ambiente de forma segura
 def get_secret(key):
     try:
         return st.secrets[key]
@@ -23,10 +24,12 @@ USERNAME3 = get_secret("USERNAME3")
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
 
+# Função de autenticação
 def authenticate(username):
     valid_users = [USERNAME1, USERNAME2, USERNAME3]
     return username in valid_users
 
+# Função para processar dados do Excel
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
@@ -38,6 +41,7 @@ def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
         logging.error(f"Erro ao processar o arquivo: {e}")
         return None
 
+# Função para criar formatos no Excel
 def create_formats(workbook):
     merge_format = workbook.add_format({
         'bold': True,
@@ -60,11 +64,13 @@ def create_formats(workbook):
 
     return merge_format, header_format, cell_wrap_format
 
+# Função para aplicar configurações de impressão no Excel
 def apply_print_settings(worksheet, header_row):
-    worksheet.fit_to_pages(1, 0)  # Fit to 1 page wide, no limit on height
-    worksheet.repeat_rows(header_row - 1)  # Repeat the header row
-    worksheet.set_print_scale(100)  # Set print scale to 100%
+    worksheet.fit_to_pages(1, 0)
+    worksheet.repeat_rows(header_row - 1)
+    worksheet.set_print_scale(100)
 
+# Função para gerar template de spools no Excel
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -175,6 +181,7 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
 
     return output
 
+# Função para gerar template de material no Excel
 def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -182,7 +189,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    col_widths = {'A': 35.57, 'B': 13.0, 'C': 22.28, 'D': 9.14, 'E': 13.0, 'F': 46.42, 'G': 9.14, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
+    col_widths = {'A': 35.57, 'B': 13.0, 'C': 22.29, 'D': 9.14, 'E': 13.0, 'F': 46.43, 'G': 9.14, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
@@ -278,111 +285,66 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     return output
 
+# Função para ir para a próxima etapa
 def next_step(step):
     st.session_state.step = step
     st.experimental_set_query_params(step=step)
 
-def main():
-    if 'step' not in st.session_state:
-        st.session_state.step = 1
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
-
-    query_params = st.experimental_get_query_params()
-    if 'step' in query_params:
-        st.session_state.step = int(query_params['step'][0])
-
-    progress_bar = st.progress(st.session_state.step / 4)
-
-    if st.session_state.step == 1:
-        login_page()
-    elif st.session_state.step == 2:
-        if st.session_state.authenticated:
-            upload_page()
-    elif st.session_state.step == 3:
-        if st.session_state.authenticated:
-            job_card_info_page()
-    elif st.session_state.step == 4:
-        if st.session_state.authenticated:
-            download_page()
-
+# Página de login
 def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username')
     if st.button('Login'):
         if authenticate(username):
             st.session_state.authenticated = True
-            st.session_state.username = username
+            st.session_state.step = 2
             st.success("Login successful")
             st.experimental_set_query_params(step=2)
-            st.button('Next', on_click=next_step, args=(2,))
         else:
             st.error('Invalid username')
 
+# Página de upload
 def upload_page():
     st.title('Job Card Generator')
     st.header("Upload SGS Excel file")
 
-    use_db_sgs = st.checkbox("Use Database SGS File", value=False)
-    use_db_drawing = st.checkbox("Use Database Drawing Part List File", value=False)
+    use_database_sgs = st.checkbox("Use Database SGS File", key="use_database_sgs")
+    use_database_drawing = st.checkbox("Use Database Drawing Part List File", key="use_database_drawing")
 
-    uploaded_file_sgs = None
-    uploaded_file_drawing = None
+    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], disabled=use_database_sgs)
+    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], disabled=use_database_drawing)
 
-    if not use_db_sgs:
-        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key="sgs_file_uploader")
-
-    if not use_db_drawing:
-        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key="drawing_file_uploader")
-
-    sgs_df = None
-    drawing_df = None
-
-    if use_db_sgs:
-        try:
-            sgs_df = pd.read_excel(SGS_FILE, sheet_name='Spool', header=9).dropna(how='all').iloc[1:].reset_index(drop=True)
-            st.success("Using SGS file from database.")
-        except Exception as e:
-            st.error(f"Erro ao carregar SGS file from database: {e}")
-            logging.error(f"Erro ao carregar SGS file from database: {e}")
-
+    if use_database_sgs:
+        sgs_df = process_excel_data(SGS_FILE)
+        st.success("Using SGS file from database.")
     elif uploaded_file_sgs is not None:
         sgs_df = process_excel_data(uploaded_file_sgs)
+        st.success("SGS file uploaded successfully.")
 
-    if use_db_drawing:
-        try:
-            drawing_df = pd.read_excel(DRAWING_PART_LIST_FILE, sheet_name='Sheet1', header=0)
-            st.success("Using Drawing Part List file from database.")
-        except Exception as e:
-            st.error(f"Erro ao carregar Drawing Part List file from database: {e}")
-            logging.error(f"Erro ao carregar Drawing Part List file from database: {e}")
-
+    if use_database_drawing:
+        drawing_df = process_excel_data(DRAWING_PART_LIST_FILE, sheet_name='Sheet1', header=0)
+        st.success("Using Drawing Part List file from database.")
     elif uploaded_file_drawing is not None:
         drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+        st.success("Drawing Part List file uploaded successfully.")
 
-    if (use_db_sgs or uploaded_file_sgs is not None) and (use_db_drawing or uploaded_file_drawing is not None):
+    if (use_database_sgs or uploaded_file_sgs) and (use_database_drawing or uploaded_file_drawing):
         if sgs_df is not None and drawing_df is not None:
             st.session_state.sgs_df = sgs_df
             st.session_state.drawing_df = drawing_df
-            st.session_state.uploaded_file_sgs = uploaded_file_sgs
-            st.session_state.uploaded_file_drawing = uploaded_file_drawing
+            st.session_state.step = 3
             st.success("Files processed successfully.")
             st.button('Next', on_click=next_step, args=(3,))
 
+# Página de informações da Job Card
 def job_card_info_page():
-    if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
-        st.error("No data available. Please go back and upload the files.")
-        st.button('Back', on_click=next_step, args=(2,))
-        return
-
     sgs_df = st.session_state.sgs_df
     drawing_df = st.session_state.drawing_df
-
     st.title('Job Card Generator')
     jc_number = st.text_input('JC Number')
-    issue_date = st.date_input('Issue Date')
+    issue_date = st.date_input('Issue Date', datetime.today())
     area = st.text_input('Area')
-    spools = st.text_area('Spool\'s (one per line)', key='spools_input')
+    spools = st.text_area("Spool's (one per line)", key='spools_input')
 
     if spools:
         unique_spools = list(dict.fromkeys([spool.strip() for spool in spools.split('\n') if spool.strip()]))
@@ -403,6 +365,7 @@ def job_card_info_page():
             st.success("Job Cards created successfully.")
             st.button('Next', on_click=next_step, args=(4,))
 
+# Página de download
 def download_page():
     st.title('Job Card Generator - Download')
     if 'jc_number' not in st.session_state:
@@ -413,19 +376,30 @@ def download_page():
     jc_number = st.session_state.jc_number
     st.download_button(
         label="Download Job Card Spools",
-        data=st.session_state.spools_excel.getvalue(),
-        file_name=f"JobCard_{jc_number}_Spools.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key='download_spools'
+        data=st.session_state.spools_excel,
+        file_name=f"Job_Card_Spools_{jc_number}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     st.download_button(
         label="Download Job Card Material",
-        data=st.session_state.material_excel.getvalue(),
-        file_name=f"JobCard_{jc_number}_Material.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        key='download_material'
+        data=st.session_state.material_excel,
+        file_name=f"Job_Card_Material_{jc_number}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    st.button("Back", on_click=next_step, args=(3,))
+    st.button('Back', on_click=next_step, args=(3,))
 
-if __name__ == "__main__":
-    main()
+# Configuração inicial
+if 'step' not in st.session_state:
+    st.session_state.step = 1
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+
+# Navegação entre etapas
+if st.session_state.step == 1:
+    login_page()
+elif st.session_state.step == 2:
+    upload_page()
+elif st.session_state.step == 3:
+    job_card_info_page()
+elif st.session_state.step == 4:
+    download_page()
