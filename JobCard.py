@@ -300,24 +300,27 @@ def selection_page():
         st.session_state.hide_buttons = False
 
     if not st.session_state.hide_buttons:
-        if st.button('Use Pre-set Database', key='preset_db'):
-            st.session_state.hide_buttons = True
-            with st.spinner('Loading pre-set database...'):
-                try:
-                    st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-                    st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-                    st.success("Pre-set database loaded successfully.")
-                    st.session_state.step = 4
-                    st.experimental_set_query_params(step=4)
-                except Exception as e:
-                    st.error(f"Error loading pre-set databases: {e}")
-                    logging.error(f"Error loading pre-set databases: {e}")
-                    st.session_state.hide_buttons = False
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button('Use Pre-set Database', key='preset_db'):
+                st.session_state.hide_buttons = True
+                with st.spinner('Loading pre-set database...'):
+                    try:
+                        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+                        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+                        st.success("Pre-set database loaded successfully.")
+                        st.session_state.step = 4
+                        st.experimental_set_query_params(step=4)
+                    except Exception as e:
+                        st.error(f"Error loading pre-set databases: {e}")
+                        logging.error(f"Error loading pre-set databases: {e}")
+                        st.session_state.hide_buttons = False
 
-        if st.button('Upload New Database', key='upload_db'):
-            st.session_state.hide_buttons = True
-            st.session_state.step = 3
-            st.experimental_set_query_params(step=3)
+        with col2:
+            if st.button('Upload New Database', key='upload_db'):
+                st.session_state.hide_buttons = True
+                st.session_state.step = 3
+                st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
@@ -338,9 +341,9 @@ def upload_page():
             st.success("Drawing Part List file uploaded successfully.")
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
-        if st.button('Next'):
-            st.session_state.step = 4
-            st.experimental_set_query_params(step=4)
+        st.button('Next', key='next_from_upload')
+        st.session_state.step = 4
+        st.experimental_set_query_params(step=4)
 
 def job_card_info_page():
     st.title('Job Card Generator')
@@ -369,16 +372,18 @@ def job_card_info_page():
                 st.session_state.step = 5
                 st.experimental_set_query_params(step=5)
 
-    if st.button("Clear"):
-        st.session_state.jc_number = ''
-        st.session_state.issue_date = pd.to_datetime('today')
-        st.session_state.area = ''
-        st.session_state.spools = ''
-
-    if st.session_state.get('spools_excel') and st.session_state.get('material_excel'):
-        if st.button('Next'):
-            st.session_state.step = 5
-            st.experimental_set_query_params(step=5)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Clear"):
+            st.session_state.jc_number = ''
+            st.session_state.issue_date = pd.to_datetime('today')
+            st.session_state.area = ''
+            st.session_state.spools = ''
+    with col2:
+        if st.session_state.get('spools_excel') and st.session_state.get('material_excel'):
+            if st.button('Next'):
+                st.session_state.step = 5
+                st.experimental_set_query_params(step=5)
 
 def download_page():
     st.title('Job Card Generator - Download')
