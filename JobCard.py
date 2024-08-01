@@ -296,17 +296,17 @@ def selection_page():
     st.title('Job Card Generator')
     st.header("Choose an Option")
 
-    if st.button('Use Pre-set Database'):
-        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-        st.session_state.step = 4
-        st.experimental_set_query_params(step=4)
-        return
-    
-    if st.button('Upload New Database'):
-        st.session_state.step = 3
-        st.experimental_set_query_params(step=3)
-        return
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Use Pre-set Database'):
+            st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+            st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+            st.session_state.step = 4
+            st.experimental_set_query_params(step=4)
+    with col2:
+        if st.button('Upload New Database'):
+            st.session_state.step = 3
+            st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
@@ -356,7 +356,6 @@ def job_card_info_page():
             st.success("Job Cards created successfully.")
             st.session_state.step = 5
             st.experimental_set_query_params(step=5)
-            return
     
     if st.button("Clear"):
         st.session_state.jc_number = ''
