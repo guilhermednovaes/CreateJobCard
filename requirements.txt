@@ -4,3 +4,4 @@ xlsxwriter
 openpyxl
 xlsxwriter
 requests
+PyGithub
