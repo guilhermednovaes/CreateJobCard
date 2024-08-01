@@ -296,19 +296,28 @@ def selection_page():
     st.title('Job Card Generator')
     st.header("Choose an Option")
 
-    if st.button('Use Pre-set Database', key='preset_db'):
-        try:
-            st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-            st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-            st.session_state.step = 4
-            st.experimental_set_query_params(step=4)
-        except Exception as e:
-            st.error(f"Error loading pre-set databases: {e}")
-            logging.error(f"Error loading pre-set databases: {e}")
+    if 'hide_buttons' not in st.session_state:
+        st.session_state.hide_buttons = False
 
-    if st.button('Upload New Database', key='upload_db'):
-        st.session_state.step = 3
-        st.experimental_set_query_params(step=3)
+    if not st.session_state.hide_buttons:
+        if st.button('Use Pre-set Database', key='preset_db'):
+            st.session_state.hide_buttons = True
+            with st.spinner('Loading pre-set database...'):
+                try:
+                    st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+                    st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+                    st.success("Pre-set database loaded successfully.")
+                    st.session_state.step = 4
+                    st.experimental_set_query_params(step=4)
+                except Exception as e:
+                    st.error(f"Error loading pre-set databases: {e}")
+                    logging.error(f"Error loading pre-set databases: {e}")
+                    st.session_state.hide_buttons = False
+
+        if st.button('Upload New Database', key='upload_db'):
+            st.session_state.hide_buttons = True
+            st.session_state.step = 3
+            st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
