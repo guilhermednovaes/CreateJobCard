@@ -355,24 +355,30 @@ def job_card_info_page():
         if not jc_number or not issue_date or not area or not spools:
             st.error('All fields must be filled out.')
         else:
-            formatted_issue_date = issue_date.strftime('%Y/%m/%d')
-            spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, spools, st.session_state.sgs_df)
-            material_excel = generate_material_template(jc_number, formatted_issue_date, area, st.session_state.drawing_df, spools)
-            st.session_state.spools_excel = spools_excel
-            st.session_state.material_excel = material_excel
-            st.session_state.jc_number = jc_number
-            st.session_state.issue_date = issue_date
-            st.session_state.area = area
-            st.session_state.spools = spools
-            st.success("Job Cards created successfully.")
-            st.session_state.step = 5
-            st.experimental_set_query_params(step=5)
-    
+            with st.spinner('Creating job cards...'):
+                formatted_issue_date = issue_date.strftime('%Y/%m/%d')
+                spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, spools, st.session_state.sgs_df)
+                material_excel = generate_material_template(jc_number, formatted_issue_date, area, st.session_state.drawing_df, spools)
+                st.session_state.spools_excel = spools_excel
+                st.session_state.material_excel = material_excel
+                st.session_state.jc_number = jc_number
+                st.session_state.issue_date = issue_date
+                st.session_state.area = area
+                st.session_state.spools = spools
+                st.success("Job Cards created successfully.")
+                st.session_state.step = 5
+                st.experimental_set_query_params(step=5)
+
     if st.button("Clear"):
         st.session_state.jc_number = ''
         st.session_state.issue_date = pd.to_datetime('today')
         st.session_state.area = ''
         st.session_state.spools = ''
+
+    if st.session_state.get('spools_excel') and st.session_state.get('material_excel'):
+        if st.button('Next'):
+            st.session_state.step = 5
+            st.experimental_set_query_params(step=5)
 
 def download_page():
     st.title('Job Card Generator - Download')
