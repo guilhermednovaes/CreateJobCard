@@ -8,9 +8,18 @@ import os
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
-USERNAME1 = st.secrets["USERNAME1"]
-USERNAME2 = st.secrets["USERNAME2"]
-USERNAME3 = st.secrets["USERNAME3"]
+# Carregar variáveis de ambiente de forma segura
+def get_secret(key):
+    try:
+        return st.secrets[key]
+    except KeyError:
+        st.error(f"Missing secret: {key}")
+        return None
+
+# Carregar usuários
+USERNAME1 = get_secret("USERNAME1")
+USERNAME2 = get_secret("USERNAME2")
+USERNAME3 = get_secret("USERNAME3")
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
 
