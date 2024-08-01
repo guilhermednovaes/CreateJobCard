@@ -4,56 +4,19 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import os
-from github import Github, GithubException
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
-PASSWORD_FILE = 'password.txt'
+USERNAME1 = st.secrets["USERNAME1"]
+USERNAME2 = st.secrets["USERNAME2"]
+USERNAME3 = st.secrets["USERNAME3"]
 SGS_FILE = 'SGS.xlsx'
 DRAWING_PART_LIST_FILE = 'DrawingPartList.xlsx'
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO = 'guilhermednovaes/CreateJobCard'
-BRANCH = 'main'
 
-def load_credentials():
-    credentials = []
-    with open(PASSWORD_FILE, 'r') as file:
-        lines = file.readlines()
-        for i in range(0, len(lines), 2):
-            if '=' in lines[i] and '=' in lines[i+1]:
-                username = lines[i].strip().split('=')[1].strip()
-                password = lines[i+1].strip().split('=')[1].strip()
-                credentials.append((username, password))
-    return credentials
-
-def update_github_file(filepath, message):
-    try:
-        g = Github(GITHUB_TOKEN)
-        repo = g.get_repo(REPO)
-        file = repo.get_contents(filepath, ref=BRANCH)
-
-        with open(filepath, 'r') as f:
-            content = f.read()
-
-        repo.update_file(file.path, message, content, file.sha, branch=BRANCH)
-        st.success(f'{filepath} atualizado no GitHub.')
-    except GithubException as e:
-        st.error(f"Erro ao atualizar o arquivo no GitHub: {e}")
-        logging.error(f"Erro ao atualizar o arquivo no GitHub: {e}")
-
-def save_credentials(credentials):
-    with open(PASSWORD_FILE, 'w') as file:
-        for username, password in credentials:
-            file.write(f'USERNAME = {username}\n')
-            file.write(f'PASSWORD = {password}\n')
-
-    update_github_file(PASSWORD_FILE, "Update password file")
-
-def authenticate(username, password):
-    username = username.lower()
-    credentials = load_credentials()
-    return (username, password) in credentials
+def authenticate(username):
+    valid_users = [USERNAME1, USERNAME2, USERNAME3]
+    return username in valid_users
 
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
@@ -315,73 +278,37 @@ def main():
         st.session_state.step = 1
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
-    if 'username' not in st.session_state:
-        st.session_state.username = ""
-    if 'password' not in st.session_state:
-        st.session_state.password = ""
 
     query_params = st.experimental_get_query_params()
     if 'step' in query_params:
         st.session_state.step = int(query_params['step'][0])
 
-    progress_bar = st.progress(st.session_state.step / 5)
+    progress_bar = st.progress(st.session_state.step / 4)
 
     if st.session_state.step == 1:
         login_page()
     elif st.session_state.step == 2:
         if st.session_state.authenticated:
-            first_access_page()
+            upload_page()
     elif st.session_state.step == 3:
         if st.session_state.authenticated:
-            upload_page()
-    elif st.session_state.step == 4:
-        if st.session_state.authenticated:
             job_card_info_page()
-    elif st.session_state.step == 5:
+    elif st.session_state.step == 4:
         if st.session_state.authenticated:
             download_page()
 
 def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username')
-    password = st.text_input('Password', type='password')
     if st.button('Login'):
-        if authenticate(username, password):
+        if authenticate(username):
             st.session_state.authenticated = True
             st.session_state.username = username
-            st.session_state.password = password
             st.success("Login successful")
-            if password == '123':
-                st.experimental_set_query_params(step=2)
-                st.warning("Your password is default '123'. Please change it.")
-            else:
-                st.experimental_set_query_params(step=3)
-            st.button('Next', on_click=next_step, args=(2 if password == '123' else 3,))
+            st.experimental_set_query_params(step=2)
+            st.button('Next', on_click=next_step, args=(2,))
         else:
-            st.error('Invalid username or password')
-
-def first_access_page():
-    st.title('First Access - Change Password')
-    st.write("Your current password is '123'. Please change it to a new password.")
-    
-    current_password = '123'
-    st.text_input('Current Password', type='password', value=current_password, disabled=True)
-    new_password = st.text_input('New Password', type='password')
-    confirm_password = st.text_input('Confirm New Password', type='password')
-
-    if st.button('Change Password'):
-        if new_password != confirm_password:
-            st.error('The new passwords do not match.')
-        elif new_password == '123':
-            st.error('The new password cannot be "123".')
-        else:
-            credentials = load_credentials()
-            new_credentials = [(user, new_password if user == st.session_state.username else passw) for user, passw in credentials]
-            save_credentials(new_credentials)
-            st.success('Password changed successfully.')
-            st.session_state.password = new_password
-            st.experimental_set_query_params(step=3)
-            st.button('Next', on_click=next_step, args=(3,))
+            st.error('Invalid username')
 
 def upload_page():
     st.title('Job Card Generator')
@@ -430,19 +357,13 @@ def upload_page():
             st.session_state.drawing_df = drawing_df
             st.session_state.uploaded_file_sgs = uploaded_file_sgs
             st.session_state.uploaded_file_drawing = uploaded_file_drawing
-            if uploaded_file_sgs:
-                sgs_df.to_excel(SGS_FILE, index=False)
-                update_github_file(SGS_FILE, "Update SGS file")
-            if uploaded_file_drawing:
-                drawing_df.to_excel(DRAWING_PART_LIST_FILE, index=False)
-                update_github_file(DRAWING_PART_LIST_FILE, "Update Drawing Part List file")
             st.success("Files processed successfully.")
-            st.button('Next', on_click=next_step, args=(4,))
+            st.button('Next', on_click=next_step, args=(3,))
 
 def job_card_info_page():
     if 'sgs_df' not in st.session_state or 'drawing_df' not in st.session_state:
         st.error("No data available. Please go back and upload the files.")
-        st.button('Back', on_click=next_step, args=(3,))
+        st.button('Back', on_click=next_step, args=(2,))
         return
 
     sgs_df = st.session_state.sgs_df
@@ -471,13 +392,13 @@ def job_card_info_page():
             st.session_state.material_excel = material_excel
             st.session_state.jc_number = jc_number
             st.success("Job Cards created successfully.")
-            st.button('Next', on_click=next_step, args=(5,))
+            st.button('Next', on_click=next_step, args=(4,))
 
 def download_page():
     st.title('Job Card Generator - Download')
     if 'jc_number' not in st.session_state:
         st.error("No job cards generated. Please go back and complete the previous steps.")
-        st.button('Back', on_click=next_step, args=(4,))
+        st.button('Back', on_click=next_step, args=(3,))
         return
 
     jc_number = st.session_state.jc_number
@@ -495,7 +416,7 @@ def download_page():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         key='download_material'
     )
-    st.button("Back", on_click=next_step, args=(4,))
+    st.button("Back", on_click=next_step, args=(3,))
 
 if __name__ == "__main__":
     main()
