@@ -10,13 +10,16 @@ logging.basicConfig(level=logging.INFO)
 
 # Funções auxiliares
 def load_users():
-    return [
+    users = [
         st.secrets["USERNAME1"].lower(),
         st.secrets["USERNAME2"].lower(),
         st.secrets["USERNAME3"].lower(),
     ]
+    logging.info(f"Loaded users: {users}")
+    return users
 
 def authenticate(username):
+    logging.info(f"Authenticating username: {username}")
     return username.lower() in load_users()
 
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
@@ -274,7 +277,9 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 # Páginas do fluxo da aplicação
 def login_page():
     st.title('Job Card Generator - Login')
-    username = st.text_input('Username', on_change=login)
+    username = st.text_input('Username', on_change=login, key='username')
+    if st.session_state.get('auth_error'):
+        st.error(st.session_state.auth_error)
 
 def login():
     if 'username' in st.session_state and authenticate(st.session_state.username):
@@ -282,7 +287,9 @@ def login():
         st.session_state.step = 2
         st.experimental_set_query_params(step=2)
         st.success("Login successful")
+        st.session_state.auth_error = None
     else:
+        st.session_state.auth_error = 'Invalid username'
         st.error('Invalid username')
 
 def upload_page():
