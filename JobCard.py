@@ -47,12 +47,14 @@ def authenticate_user():
 
 # Página de login
 def login_page():
-    st.title('Job Card Generator - Login')
+    st.markdown("<h1 style='text-align: center;'>Job Card Generator - Login</h1>", unsafe_allow_html=True)
     username = st.text_input('Username', key='username', on_change=authenticate_user)
-    
+    if st.session_state.authenticated:
+        st.button('Next', on_click=next_step, args=(2,))
+
 # Página de upload
 def upload_page():
-    st.title('Job Card Generator')
+    st.markdown("<h1 style='text-align: center;'>Job Card Generator</h1>", unsafe_allow_html=True)
     st.header("Upload SGS Excel file")
 
     use_database_sgs = st.checkbox("Use Database SGS File", key="use_database_sgs")
@@ -60,6 +62,9 @@ def upload_page():
 
     uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], disabled=use_database_sgs)
     uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], disabled=use_database_drawing)
+
+    sgs_df = None
+    drawing_df = None
 
     if use_database_sgs:
         sgs_df = process_excel_data(SGS_FILE)
@@ -86,7 +91,7 @@ def upload_page():
 def job_card_info_page():
     sgs_df = st.session_state.sgs_df
     drawing_df = st.session_state.drawing_df
-    st.title('Job Card Generator')
+    st.markdown("<h1 style='text-align: center;'>Job Card Generator</h1>", unsafe_allow_html=True)
     jc_number = st.text_input('JC Number')
     issue_date = st.date_input('Issue Date', datetime.today())
     area = st.text_input('Area')
@@ -113,7 +118,7 @@ def job_card_info_page():
 
 # Página de download
 def download_page():
-    st.title('Job Card Generator - Download')
+    st.markdown("<h1 style='text-align: center;'>Job Card Generator - Download</h1>", unsafe_allow_html=True)
     if 'jc_number' not in st.session_state:
         st.error("No job cards generated. Please go back and complete the previous steps.")
         st.button('Back', on_click=next_step, args=(3,))
