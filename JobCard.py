@@ -299,13 +299,13 @@ def selection_page():
     if st.button('Use Pre-set Database'):
         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-        st.session_state.step = 3
-        st.experimental_set_query_params(step=3)
+        st.session_state.step = 4
+        st.experimental_set_query_params(step=4)
         st.experimental_rerun()
     
     if st.button('Upload New Database'):
-        st.session_state.step = 4
-        st.experimental_set_query_params(step=4)
+        st.session_state.step = 3
+        st.experimental_set_query_params(step=3)
         st.experimental_rerun()
 
 def upload_page():
@@ -328,8 +328,8 @@ def upload_page():
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
         if st.button('Next'):
-            st.session_state.step = 3
-            st.experimental_set_query_params(step=3)
+            st.session_state.step = 4
+            st.experimental_set_query_params(step=4)
             st.experimental_rerun()
 
 def job_card_info_page():
@@ -387,8 +387,8 @@ def download_page():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     if st.button("Back"):
-        st.session_state.step = 3
-        st.experimental_set_query_params(step=3)
+        st.session_state.step = 4
+        st.experimental_set_query_params(step=4)
         st.experimental_rerun()
 
 # Função principal
@@ -405,13 +405,13 @@ def main():
     steps = {
         1: login_page,
         2: selection_page,
-        3: job_card_info_page,
-        4: upload_page,
+        3: upload_page,
+        4: job_card_info_page,
         5: download_page,
     }
     
     st.sidebar.title("Navigation")
-    step_names = ["Login", "Selection", "Job Card Info", "Upload Files", "Download"]
+    step_names = ["Login", "Selection", "Upload Files", "Job Card Info", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
         if i <= st.session_state.step:
