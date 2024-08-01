@@ -303,7 +303,7 @@ def upload_page():
         st.session_state.use_drawing_db = False
 
     use_sgs_db = st.checkbox("Use Database SGS File", key='use_sgs_db')
-    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db', disabled=use_sgs_db)
+    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db')
 
     if use_sgs_db and 'sgs_df' not in st.session_state:
         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
@@ -367,6 +367,11 @@ def job_card_info_page():
         st.session_state.issue_date = pd.to_datetime('today')
         st.session_state.area = ''
         st.session_state.spools = ''
+        st.experimental_rerun()
+    
+    if st.button("Next"):
+        st.session_state.step = 4
+        st.experimental_set_query_params(step=4)
         st.experimental_rerun()
 
 def download_page():
