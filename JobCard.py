@@ -2,60 +2,25 @@ import streamlit as st
 import pandas as pd
 import xlsxwriter
 from io import BytesIO
-import logging
 import os
 
-# Configuração do logger
-logging.basicConfig(level=logging.INFO)
+# Configuração inicial
+USERNAME1 = os.getenv("USERNAME1")
+USERNAME2 = os.getenv("USERNAME2")
+USERNAME3 = os.getenv("USERNAME3")
+usernames = [USERNAME1, USERNAME2, USERNAME3]
 
 # Funções auxiliares
-def load_users():
-    return [
-        st.secrets["USERNAME1"].lower(),
-        st.secrets["USERNAME2"].lower(),
-        st.secrets["USERNAME3"].lower(),
-    ]
-
 def authenticate(username):
-    return username.lower() in load_users()
+    return username.lower() in usernames
 
-def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
+def process_excel_data(file, sheet_name='Sheet1', header=0):
     try:
-        df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
-        df = df.iloc[1:]
-        df = df.reset_index(drop=True)
-        return df
+        df = pd.read_excel(file, sheet_name=sheet_name, header=header)
+        return df.dropna(how='all').iloc[1:].reset_index(drop=True)
     except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-        logging.error(f"Erro ao processar o arquivo: {e}")
+        st.error(f"Error processing file: {e}")
         return None
-
-def create_formats(workbook):
-    merge_format = workbook.add_format({
-        'bold': True,
-        'border': 1,
-        'align': 'center',
-        'valign': 'vcenter'
-    })
-    header_format = workbook.add_format({
-        'bold': True,
-        'border': 1,
-        'align': 'center',
-        'valign': 'vcenter',
-        'bg_color': '#D3D3D3'
-    })
-    cell_wrap_format = workbook.add_format({
-        'border': 1,
-        'align': 'center',
-        'valign': 'vcenter',
-        'text_wrap': True
-    })
-    return merge_format, header_format, cell_wrap_format
-
-def apply_print_settings(worksheet, header_row):
-    worksheet.fit_to_pages(1, 0)
-    worksheet.repeat_rows(header_row - 1)
-    worksheet.set_print_scale(100)
 
 # Funções para gerar templates de Excel
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
@@ -270,18 +235,21 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
     output.seek(0)
 
     return output
-
 # Páginas do fluxo da aplicação
 def login_page():
     st.title('Job Card Generator - Login')
-    username = st.text_input('Username', on_change=login)
+    username = st.text_input('Username', on_change=login, key='username_input')
+    if st.session_state.get('authenticated'):
+        st.success("Login successful")
+        st.session_state.step = 2
+        st.experimental_set_query_params(step=2)
 
 def login():
-    if 'username' in st.session_state and authenticate(st.session_state.username):
+    username = st.session_state.get('username_input', '')
+    if authenticate(username):
         st.session_state.authenticated = True
         st.session_state.step = 2
         st.experimental_set_query_params(step=2)
-        st.success("Login successful")
     else:
         st.error('Invalid username')
 
@@ -300,20 +268,21 @@ def upload_page():
         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
         st.success("Using Drawing Part List file from database.")
     
-    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs', disabled=use_sgs_db)
-    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing', disabled=use_drawing_db)
+    if not use_sgs_db:
+        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs')
+        if uploaded_file_sgs is not None:
+            sgs_df = process_excel_data(uploaded_file_sgs)
+            if sgs_df is not None:
+                st.session_state.sgs_df = sgs_df
+                st.success("SGS file uploaded successfully.")
     
-    if uploaded_file_sgs is not None and not use_sgs_db:
-        sgs_df = process_excel_data(uploaded_file_sgs)
-        if sgs_df is not None:
-            st.session_state.sgs_df = sgs_df
-            st.success("SGS file uploaded successfully.")
-
-    if uploaded_file_drawing is not None and not use_drawing_db:
-        drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-        if drawing_df is not None:
-            st.session_state.drawing_df = drawing_df
-            st.success("Drawing Part List file uploaded successfully.")
+    if not use_drawing_db:
+        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing')
+        if uploaded_file_drawing is not None:
+            drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+            if drawing_df is not None:
+                st.session_state.drawing_df = drawing_df
+                st.success("Drawing Part List file uploaded successfully.")
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
         st.session_state.step = 3
@@ -399,7 +368,7 @@ def main():
     step_names = ["Login", "Upload Files", "Job Card Info", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
-        if st.sidebar.button(name, key=f"step_{i}"):
+        if st.sidebar.button(name, key=f"step_{i}", disabled=(i > st.session_state.step)):
             st.session_state.step = i
             st.experimental_set_query_params(step=i)
 
