@@ -330,10 +330,10 @@ def upload_page():
     uploaded_file_drawing = None
 
     if not use_db_sgs:
-        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'])
+        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key="sgs_file_uploader")
 
     if not use_db_drawing:
-        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'])
+        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key="drawing_file_uploader")
 
     sgs_df = None
     drawing_df = None
