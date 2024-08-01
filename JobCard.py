@@ -3,7 +3,6 @@ import pandas as pd
 import xlsxwriter
 from io import BytesIO
 import logging
-import os
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -60,7 +59,6 @@ def apply_print_settings(worksheet, header_row):
     worksheet.repeat_rows(header_row - 1)
     worksheet.set_print_scale(100)
 
-# Funções para gerar templates de Excel
 def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -68,7 +66,7 @@ def generate_spools_template(jc_number, issue_date, area, spools, sgs_df):
 
     merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    col_widths = {'A': 9.140625, 'B': 11.0, 'C': 35.5703125, 'D': 9.140625, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.7109375, 'J': 17.7109375, 'K': 13.86, 'L': 13.140625}
+    col_widths = {'A': 9.14, 'B': 11.0, 'C': 35.57, 'D': 9.14, 'E': 13.0, 'F': 13.0, 'G': 13.0, 'H': 13.0, 'I': 11.71, 'J': 17.71, 'K': 13.86, 'L': 13.14}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
@@ -178,7 +176,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     merge_format, header_format, cell_wrap_format = create_formats(workbook)
 
-    col_widths = {'A': 35.5703125, 'B': 13.0, 'C': 22.28515625, 'D': 9.140625, 'E': 13.0, 'F': 46.42578125, 'G': 9.140625, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
+    col_widths = {'A': 35.57, 'B': 13.0, 'C': 22.28, 'D': 9.14, 'E': 13.0, 'F': 46.42, 'G': 9.14, 'H': 13.0, 'I': 13.0, 'J': 13.0, 'K': 13.0, 'L': 13.0}
     for col, width in col_widths.items():
         worksheet.set_column(f'{col}:{col}', width, cell_wrap_format)
 
