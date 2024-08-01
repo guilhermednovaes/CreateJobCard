@@ -292,42 +292,39 @@ def login():
         st.session_state.auth_error = 'Invalid username'
         st.error('Invalid username')
 
+def selection_page():
+    st.title('Job Card Generator')
+    st.header("Choose an Option")
+
+    if st.button('Use Pre-set Database'):
+        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+        st.session_state.step = 3
+        st.experimental_set_query_params(step=3)
+        st.experimental_rerun()
+    
+    if st.button('Upload New Database'):
+        st.session_state.step = 4
+        st.experimental_set_query_params(step=4)
+        st.experimental_rerun()
+
 def upload_page():
     st.title('Job Card Generator')
-    st.header("Upload SGS Excel file")
+    st.header("Upload Database Files")
 
-    if 'use_sgs_db' not in st.session_state:
-        st.session_state.use_sgs_db = False
+    uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs')
+    if uploaded_file_sgs is not None:
+        sgs_df = process_excel_data(uploaded_file_sgs)
+        if sgs_df is not None:
+            st.session_state.sgs_df = sgs_df
+            st.success("SGS file uploaded successfully.")
 
-    if 'use_drawing_db' not in st.session_state:
-        st.session_state.use_drawing_db = False
-
-    use_sgs_db = st.checkbox("Use Database SGS File", key='use_sgs_db')
-    use_drawing_db = st.checkbox("Use Database Drawing Part List File", key='use_drawing_db')
-
-    if use_sgs_db and 'sgs_df' not in st.session_state:
-        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-        st.success("Using SGS file from database.")
-    
-    if use_drawing_db and 'drawing_df' not in st.session_state:
-        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-        st.success("Using Drawing Part List file from database.")
-    
-    if not use_sgs_db:
-        uploaded_file_sgs = st.file_uploader('Upload SGS Excel file', type=['xlsx'], key='uploaded_file_sgs')
-        if uploaded_file_sgs is not None:
-            sgs_df = process_excel_data(uploaded_file_sgs)
-            if sgs_df is not None:
-                st.session_state.sgs_df = sgs_df
-                st.success("SGS file uploaded successfully.")
-
-    if not use_drawing_db:
-        uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing')
-        if uploaded_file_drawing is not None:
-            drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-            if drawing_df is not None:
-                st.session_state.drawing_df = drawing_df
-                st.success("Drawing Part List file uploaded successfully.")
+    uploaded_file_drawing = st.file_uploader('Upload Drawing Part List Excel file', type=['xlsx'], key='uploaded_file_drawing')
+    if uploaded_file_drawing is not None:
+        drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+        if drawing_df is not None:
+            st.session_state.drawing_df = drawing_df
+            st.success("Drawing Part List file uploaded successfully.")
     
     if st.session_state.get('sgs_df') is not None and st.session_state.get('drawing_df') is not None:
         if st.button('Next'):
@@ -358,8 +355,8 @@ def job_card_info_page():
             st.session_state.area = area
             st.session_state.spools = spools
             st.success("Job Cards created successfully.")
-            st.session_state.step = 4
-            st.experimental_set_query_params(step=4)
+            st.session_state.step = 5
+            st.experimental_set_query_params(step=5)
             st.experimental_rerun()
     
     if st.button("Clear"):
@@ -367,11 +364,6 @@ def job_card_info_page():
         st.session_state.issue_date = pd.to_datetime('today')
         st.session_state.area = ''
         st.session_state.spools = ''
-        st.experimental_rerun()
-    
-    if st.button("Next"):
-        st.session_state.step = 4
-        st.experimental_set_query_params(step=4)
         st.experimental_rerun()
 
 def download_page():
@@ -412,13 +404,14 @@ def main():
 
     steps = {
         1: login_page,
-        2: upload_page,
+        2: selection_page,
         3: job_card_info_page,
-        4: download_page,
+        4: upload_page,
+        5: download_page,
     }
     
     st.sidebar.title("Navigation")
-    step_names = ["Login", "Upload Files", "Job Card Info", "Download"]
+    step_names = ["Login", "Selection", "Job Card Info", "Upload Files", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
         if i <= st.session_state.step:
