@@ -301,12 +301,12 @@ def selection_page():
         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
         st.session_state.step = 4
         st.experimental_set_query_params(step=4)
-        st.experimental_rerun()
+        return
     
     if st.button('Upload New Database'):
         st.session_state.step = 3
         st.experimental_set_query_params(step=3)
-        st.experimental_rerun()
+        return
 
 def upload_page():
     st.title('Job Card Generator')
@@ -330,7 +330,6 @@ def upload_page():
         if st.button('Next'):
             st.session_state.step = 4
             st.experimental_set_query_params(step=4)
-            st.experimental_rerun()
 
 def job_card_info_page():
     st.title('Job Card Generator')
@@ -357,14 +356,13 @@ def job_card_info_page():
             st.success("Job Cards created successfully.")
             st.session_state.step = 5
             st.experimental_set_query_params(step=5)
-            st.experimental_rerun()
+            return
     
     if st.button("Clear"):
         st.session_state.jc_number = ''
         st.session_state.issue_date = pd.to_datetime('today')
         st.session_state.area = ''
         st.session_state.spools = ''
-        st.experimental_rerun()
 
 def download_page():
     st.title('Job Card Generator - Download')
@@ -389,7 +387,6 @@ def download_page():
     if st.button("Back"):
         st.session_state.step = 4
         st.experimental_set_query_params(step=4)
-        st.experimental_rerun()
 
 # Função principal
 def main():
@@ -418,7 +415,6 @@ def main():
             if st.sidebar.button(name, key=f"step_{i}"):
                 st.session_state.step = i
                 st.experimental_set_query_params(step=i)
-                st.experimental_rerun()
 
     progress = st.sidebar.progress(0)
     progress.progress(st.session_state.step / len(steps))
