@@ -275,6 +275,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 # Página de Login
 def login_page():
     st.title('Job Card Generator - Login')
+    st.header('Por favor, faça login para continuar')
     username = st.text_input('Username', on_change=login, key='username')
     if st.session_state.get('auth_error'):
         st.error(st.session_state.auth_error)
@@ -284,15 +285,17 @@ def login():
         st.session_state.authenticated = True
         st.session_state.step = 2
         st.experimental_set_query_params(step=2)
-        st.success("Login successful")
+        st.success("Login bem-sucedido")
         st.session_state.auth_error = None
     else:
-        st.session_state.auth_error = 'Invalid username'
-        st.error('Invalid username')
+        st.session_state.auth_error = 'Usuário inválido'
+        st.error('Usuário inválido')
 
 # Página de seleção de base de dados
 def select_database_page():
-    st.title("Escolha uma Base de Dados Predefinida ou Faça Upload de uma Nova Base de Dados")
+    st.title("Escolha uma Base de Dados")
+    st.header("Selecione uma base de dados predefinida ou faça o upload de uma nova base de dados")
+
     option = st.radio("Selecione uma opção", ["Usar Base de Dados Predefinida", "Fazer Upload de Base de Dados"])
 
     if option == "Usar Base de Dados Predefinida":
@@ -306,6 +309,7 @@ def select_database_page():
                         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
                         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                         st.session_state.base_loaded = True
+                        st.success("Base de dados carregada com sucesso.")
                     except Exception as e:
                         st.error(f"Erro ao carregar a base de dados: {e}")
                         logging.error(f"Erro ao carregar a base de dados: {e}")
@@ -341,7 +345,8 @@ def select_database_page():
 # Página de informações do cartão de trabalho
 def job_card_info_page():
     st.title("Informações do Cartão de Trabalho")
-    
+    st.header("Preencha as informações do cartão de trabalho")
+
     jc_number = st.text_input('Número do JC', value=st.session_state.get('jc_number', ''))
     issue_date = st.date_input('Data de Emissão', value=st.session_state.get('issue_date', pd.to_datetime('today')))
     area = st.text_input('Área', value=st.session_state.get('area', ''))
@@ -369,6 +374,8 @@ def job_card_info_page():
 # Página de download dos cartões de trabalho
 def download_page():
     st.title("Download dos Cartões de Trabalho")
+    st.header("Baixe os cartões de trabalho gerados")
+
     if 'jc_number' not in st.session_state:
         st.error("Nenhum cartão de trabalho gerado. Por favor, volte e complete as etapas anteriores.")
         return
