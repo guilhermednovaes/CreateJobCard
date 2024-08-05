@@ -24,8 +24,7 @@ def authenticate(username):
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
-        df = df.iloc[1:]
-        df = df.reset_index(drop=True)
+        df = df.iloc[1:].reset_index(drop=True)
         return df
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
