@@ -296,25 +296,33 @@ def main_page():
     st.sidebar.markdown("---")
     st.sidebar.header("Navigation")
 
-    option = st.sidebar.radio("Escolha uma ação", ["Escolher Base de Dados Predefinida", "Fazer Upload de Base de Dados"])
-    
-    if option == "Escolher Base de Dados Predefinida":
-        st.header("Escolha uma Base de Dados Predefinida")
-        if st.button('Usar Base de Dados Predefinida'):
-            with st.spinner('Carregando base de dados...'):
-                try:
-                    st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-                    st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-                    st.success("Base de dados carregada com sucesso.")
-                    if st.button('Next'):
-                        st.session_state.step = 3
-                        st.experimental_set_query_params(step=3)
-                except Exception as e:
-                    st.error(f"Erro ao carregar a base de dados: {e}")
-                    logging.error(f"Erro ao carregar a base de dados: {e}")
+    # Slicer de seleção de base de dados
+    st.header("Escolha uma Base de Dados Predefinida ou Faça Upload de uma Nova Base de Dados")
+    option = st.radio("Selecione uma opção", ["Usar Base de Dados Predefinida", "Fazer Upload de Base de Dados"])
+
+    if option == "Usar Base de Dados Predefinida":
+        if "base_loaded" not in st.session_state:
+            st.session_state.base_loaded = False
+
+        if not st.session_state.base_loaded:
+            if st.button('Usar Base de Dados Predefinida'):
+                with st.spinner('Carregando base de dados...'):
+                    try:
+                        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+                        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+                        st.session_state.base_loaded = True
+                        st.success("Base de dados carregada com sucesso.")
+                    except Exception as e:
+                        st.error(f"Erro ao carregar a base de dados: {e}")
+                        logging.error(f"Erro ao carregar a base de dados: {e}")
+        
+        if st.session_state.base_loaded:
+            st.success("Base de dados carregada com sucesso.")
+            if st.button('Next'):
+                st.session_state.step = 3
+                st.experimental_set_query_params(step=3)
 
     elif option == "Fazer Upload de Base de Dados":
-        st.header("Upload de Arquivos de Base de Dados")
         uploaded_file_sgs = st.file_uploader('Upload do arquivo Excel SGS', type=['xlsx'], key='uploaded_file_sgs')
         if uploaded_file_sgs is not None:
             sgs_df = process_excel_data(uploaded_file_sgs)
