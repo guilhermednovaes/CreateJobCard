@@ -306,7 +306,6 @@ def select_database_page():
                         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
                         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                         st.session_state.base_loaded = True
-                        st.success("Base de dados carregada com sucesso.")
                     except Exception as e:
                         st.error(f"Erro ao carregar a base de dados: {e}")
                         logging.error(f"Erro ao carregar a base de dados: {e}")
