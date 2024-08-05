@@ -290,14 +290,9 @@ def login():
         st.session_state.auth_error = 'Invalid username'
         st.error('Invalid username')
 
-# Página Principal
-def main_page():
-    st.sidebar.title("Job Card Generator")
-    st.sidebar.markdown("---")
-    st.sidebar.header("Navigation")
-
-    # Slicer de seleção de base de dados
-    st.header("Escolha uma Base de Dados Predefinida ou Faça Upload de uma Nova Base de Dados")
+# Página de seleção de base de dados
+def select_database_page():
+    st.title("Escolha uma Base de Dados Predefinida ou Faça Upload de uma Nova Base de Dados")
     option = st.radio("Selecione uma opção", ["Usar Base de Dados Predefinida", "Fazer Upload de Base de Dados"])
 
     if option == "Usar Base de Dados Predefinida":
@@ -315,10 +310,10 @@ def main_page():
                     except Exception as e:
                         st.error(f"Erro ao carregar a base de dados: {e}")
                         logging.error(f"Erro ao carregar a base de dados: {e}")
-        
+
         if st.session_state.base_loaded:
             st.success("Base de dados carregada com sucesso.")
-            if st.button('Next'):
+            if st.button('Next', key='next1'):
                 st.session_state.step = 3
                 st.experimental_set_query_params(step=3)
 
@@ -338,56 +333,58 @@ def main_page():
                 st.success("Arquivo Drawing Part List carregado com sucesso.")
 
         if 'sgs_df' in st.session_state and 'drawing_df' in st.session_state:
-            if st.button('Next'):
+            if st.button('Next', key='next2'):
                 st.session_state.step = 3
                 st.experimental_set_query_params(step=3)
+
+# Página de informações do cartão de trabalho
+def job_card_info_page():
+    st.title("Informações do Cartão de Trabalho")
     
-    if st.session_state.step == 3:
-        st.header("Informações do Cartão de Trabalho")
-        
-        jc_number = st.text_input('Número do JC', value=st.session_state.get('jc_number', ''))
-        issue_date = st.date_input('Data de Emissão', value=st.session_state.get('issue_date', pd.to_datetime('today')))
-        area = st.text_input('Área', value=st.session_state.get('area', ''))
-        spools = st.text_area('Spools (um por linha)', value=st.session_state.get('spools', ''))
+    jc_number = st.text_input('Número do JC', value=st.session_state.get('jc_number', ''))
+    issue_date = st.date_input('Data de Emissão', value=st.session_state.get('issue_date', pd.to_datetime('today')))
+    area = st.text_input('Área', value=st.session_state.get('area', ''))
+    spools = st.text_area('Spools (um por linha)', value=st.session_state.get('spools', ''))
 
-        if st.button("Criar Cartões de Trabalho"):
-            if not jc_number or not issue_date or not area or not spools:
-                st.error('Todos os campos devem ser preenchidos.')
-            else:
-                with st.spinner('Criando cartões de trabalho...'):
-                    formatted_issue_date = issue_date.strftime('%Y/%m/%d')
-                    spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, spools, st.session_state.sgs_df)
-                    material_excel = generate_material_template(jc_number, formatted_issue_date, area, st.session_state.drawing_df, spools)
-                    st.session_state.spools_excel = spools_excel
-                    st.session_state.material_excel = material_excel
-                    st.session_state.jc_number = jc_number
-                    st.session_state.issue_date = issue_date
-                    st.session_state.area = area
-                    st.session_state.spools = spools
-                    st.success("Cartões de Trabalho criados com sucesso.")
-                    if st.button('Next'):
-                        st.session_state.step = 4
-                        st.experimental_set_query_params(step=4)
+    if st.button("Criar Cartões de Trabalho", key='create_job_cards'):
+        if not jc_number or not issue_date or not area or not spools:
+            st.error('Todos os campos devem ser preenchidos.')
+        else:
+            with st.spinner('Criando cartões de trabalho...'):
+                formatted_issue_date = issue_date.strftime('%Y/%m/%d')
+                spools_excel = generate_spools_template(jc_number, formatted_issue_date, area, spools, st.session_state.sgs_df)
+                material_excel = generate_material_template(jc_number, formatted_issue_date, area, st.session_state.drawing_df, spools)
+                st.session_state.spools_excel = spools_excel
+                st.session_state.material_excel = material_excel
+                st.session_state.jc_number = jc_number
+                st.session_state.issue_date = issue_date
+                st.session_state.area = area
+                st.session_state.spools = spools
+                st.success("Cartões de Trabalho criados com sucesso.")
+                if st.button('Next', key='next3'):
+                    st.session_state.step = 4
+                    st.experimental_set_query_params(step=4)
 
-    if st.session_state.step == 4:
-        st.header("Download dos Cartões de Trabalho")
-        if 'jc_number' not in st.session_state:
-            st.error("Nenhum cartão de trabalho gerado. Por favor, volte e complete as etapas anteriores.")
-            return
+# Página de download dos cartões de trabalho
+def download_page():
+    st.title("Download dos Cartões de Trabalho")
+    if 'jc_number' not in st.session_state:
+        st.error("Nenhum cartão de trabalho gerado. Por favor, volte e complete as etapas anteriores.")
+        return
 
-        jc_number = st.session_state.jc_number
-        st.download_button(
-            label="Download dos Cartões de Trabalho - Spools",
-            data=st.session_state.spools_excel.getvalue(),
-            file_name=f"JobCard_{jc_number}_Spools.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        st.download_button(
-            label="Download dos Cartões de Trabalho - Material",
-            data=st.session_state.material_excel.getvalue(),
-            file_name=f"JobCard_{jc_number}_Material.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    jc_number = st.session_state.jc_number
+    st.download_button(
+        label="Download dos Cartões de Trabalho - Spools",
+        data=st.session_state.spools_excel.getvalue(),
+        file_name=f"JobCard_{jc_number}_Spools.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    st.download_button(
+        label="Download dos Cartões de Trabalho - Material",
+        data=st.session_state.material_excel.getvalue(),
+        file_name=f"JobCard_{jc_number}_Material.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # Função principal
 def main():
@@ -402,8 +399,12 @@ def main():
 
     if st.session_state.step == 1:
         login_page()
-    else:
-        main_page()
+    elif st.session_state.step == 2:
+        select_database_page()
+    elif st.session_state.step == 3:
+        job_card_info_page()
+    elif st.session_state.step == 4:
+        download_page()
 
 if __name__ == "__main__":
     main()
