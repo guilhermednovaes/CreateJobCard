@@ -300,7 +300,7 @@ def select_database_page():
             st.session_state.base_loaded = False
 
         if not st.session_state.base_loaded:
-            if st.button('Usar Base de Dados Predefinida'):
+            if st.button('Usar Base de Dados Predefinida', key='use_preset_db'):
                 with st.spinner('Carregando base de dados...'):
                     try:
                         st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
