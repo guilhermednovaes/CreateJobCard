@@ -320,17 +320,19 @@ def select_database_page():
     elif option == "Fazer Upload de Base de Dados":
         uploaded_file_sgs = st.file_uploader('Upload do arquivo Excel SGS', type=['xlsx'], key='uploaded_file_sgs')
         if uploaded_file_sgs is not None:
-            sgs_df = process_excel_data(uploaded_file_sgs)
-            if sgs_df is not None:
-                st.session_state.sgs_df = sgs_df
-                st.success("Arquivo SGS carregado com sucesso.")
+            with st.spinner('Carregando arquivo...'):
+                sgs_df = process_excel_data(uploaded_file_sgs)
+                if sgs_df is not None:
+                    st.session_state.sgs_df = sgs_df
+                    st.success("Arquivo SGS carregado com sucesso.")
 
         uploaded_file_drawing = st.file_uploader('Upload do arquivo Excel Drawing Part List', type=['xlsx'], key='uploaded_file_drawing')
         if uploaded_file_drawing is not None:
-            drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
-            if drawing_df is not None:
-                st.session_state.drawing_df = drawing_df
-                st.success("Arquivo Drawing Part List carregado com sucesso.")
+            with st.spinner('Carregando arquivo...'):
+                drawing_df = process_excel_data(uploaded_file_drawing, sheet_name='Sheet1', header=0)
+                if drawing_df is not None:
+                    st.session_state.drawing_df = drawing_df
+                    st.success("Arquivo Drawing Part List carregado com sucesso.")
 
         if 'sgs_df' in st.session_state and 'drawing_df' in st.session_state:
             if st.button('Next', key='next2'):
