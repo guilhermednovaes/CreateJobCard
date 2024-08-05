@@ -7,6 +7,7 @@ import logging
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
+# Funções auxiliares
 def load_users():
     users = [
         st.secrets["USERNAME1"].lower(),
@@ -23,7 +24,8 @@ def authenticate(username):
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
     try:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header).dropna(how='all')
-        df = df.iloc[1:].reset_index(drop=True)
+        df = df.iloc[1:]
+        df = df.reset_index(drop=True)
         return df
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
@@ -270,6 +272,7 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 
     return output
 
+# Páginas do fluxo da aplicação
 def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username', on_change=login, key='username')
@@ -299,33 +302,23 @@ def selection_page():
         with col1:
             if st.button('Use Pre-set Database', key='preset_db'):
                 st.session_state.hide_buttons = True
-                st.session_state.button_pressed = 'preset_db'
-                st.experimental_rerun()
+                with st.spinner('Loading pre-set database...'):
+                    try:
+                        st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
+                        st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
+                        st.success("Pre-set database loaded successfully.")
+                        st.session_state.step = 4
+                        st.experimental_set_query_params(step=4)
+                    except Exception as e:
+                        st.error(f"Error loading pre-set databases: {e}")
+                        logging.error(f"Error loading pre-set databases: {e}")
+                        st.session_state.hide_buttons = False
 
         with col2:
             if st.button('Upload New Database', key='upload_db'):
                 st.session_state.hide_buttons = True
-                st.session_state.button_pressed = 'upload_db'
-                st.experimental_rerun()
-
-    if st.session_state.hide_buttons:
-        if st.session_state.button_pressed == 'preset_db':
-            with st.spinner('Loading pre-set database...'):
-                try:
-                    st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
-                    st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
-                    st.success("Pre-set database loaded successfully.")
-                    st.session_state.step = 4
-                    st.experimental_set_query_params(step=4)
-                except Exception as e:
-                    st.error(f"Error loading pre-set databases: {e}")
-                    logging.error(f"Error loading pre-set databases: {e}")
-                    st.session_state.hide_buttons = False
-                    st.session_state.button_pressed = None
-
-        elif st.session_state.button_pressed == 'upload_db':
-            st.session_state.step = 3
-            st.experimental_set_query_params(step=3)
+                st.session_state.step = 3
+                st.experimental_set_query_params(step=3)
 
 def upload_page():
     st.title('Job Card Generator')
@@ -414,6 +407,7 @@ def download_page():
         st.session_state.step = 4
         st.experimental_set_query_params(step=4)
 
+# Função principal
 def main():
     if 'step' not in st.session_state:
         st.session_state.step = 1
