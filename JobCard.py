@@ -296,9 +296,9 @@ def main_page():
     st.sidebar.markdown("---")
     st.sidebar.header("Navigation")
 
-    option = st.sidebar.selectbox("Escolha uma ação", ["Escolher Base de Dados", "Fazer Upload de Base de Dados", "Gerar Cartões de Trabalho", "Download"])
+    option = st.sidebar.radio("Escolha uma ação", ["Escolher Base de Dados Predefinida", "Fazer Upload de Base de Dados"])
     
-    if option == "Escolher Base de Dados":
+    if option == "Escolher Base de Dados Predefinida":
         st.header("Escolha uma Base de Dados Predefinida")
         if st.button('Usar Base de Dados Predefinida'):
             with st.spinner('Carregando base de dados...'):
@@ -306,6 +306,9 @@ def main_page():
                     st.session_state.sgs_df = process_excel_data('SGS.xlsx', sheet_name='Spool', header=9)
                     st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                     st.success("Base de dados carregada com sucesso.")
+                    if st.button('Next'):
+                        st.session_state.step = 3
+                        st.experimental_set_query_params(step=3)
                 except Exception as e:
                     st.error(f"Erro ao carregar a base de dados: {e}")
                     logging.error(f"Erro ao carregar a base de dados: {e}")
@@ -325,8 +328,13 @@ def main_page():
             if drawing_df is not None:
                 st.session_state.drawing_df = drawing_df
                 st.success("Arquivo Drawing Part List carregado com sucesso.")
+
+        if 'sgs_df' in st.session_state and 'drawing_df' in st.session_state:
+            if st.button('Next'):
+                st.session_state.step = 3
+                st.experimental_set_query_params(step=3)
     
-    elif option == "Gerar Cartões de Trabalho":
+    if st.session_state.step == 3:
         st.header("Informações do Cartão de Trabalho")
         
         jc_number = st.text_input('Número do JC', value=st.session_state.get('jc_number', ''))
@@ -349,8 +357,11 @@ def main_page():
                     st.session_state.area = area
                     st.session_state.spools = spools
                     st.success("Cartões de Trabalho criados com sucesso.")
-    
-    elif option == "Download":
+                    if st.button('Next'):
+                        st.session_state.step = 4
+                        st.experimental_set_query_params(step=4)
+
+    if st.session_state.step == 4:
         st.header("Download dos Cartões de Trabalho")
         if 'jc_number' not in st.session_state:
             st.error("Nenhum cartão de trabalho gerado. Por favor, volte e complete as etapas anteriores.")
