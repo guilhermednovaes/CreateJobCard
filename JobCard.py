@@ -276,20 +276,17 @@ def generate_material_template(jc_number, issue_date, area, drawing_df, spools):
 def login_page():
     st.title('Job Card Generator - Login')
     st.header('Por favor, faça login para continuar')
-    username = st.text_input('Username', on_change=login, key='username')
-    if st.session_state.get('auth_error'):
-        st.error(st.session_state.auth_error)
-
-def login():
-    if 'username' in st.session_state and authenticate(st.session_state.username):
-        st.session_state.authenticated = True
-        st.session_state.step = 2
-        st.experimental_set_query_params(step=2)
-        st.success("Login bem-sucedido")
-        st.session_state.auth_error = None
-    else:
-        st.session_state.auth_error = 'Usuário inválido'
-        st.error('Usuário inválido')
+    username = st.text_input('Username', key='username')
+    if st.button('Login'):
+        if authenticate(username):
+            st.session_state.authenticated = True
+            st.session_state.step = 2
+            st.experimental_set_query_params(step=2)
+            st.success("Login bem-sucedido")
+            st.session_state.auth_error = None
+        else:
+            st.session_state.auth_error = 'Usuário inválido'
+            st.error('Usuário inválido')
 
 # Página de seleção de base de dados
 def select_database_page():
@@ -310,15 +307,11 @@ def select_database_page():
                         st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                         st.session_state.base_loaded = True
                         st.success("Base de dados carregada com sucesso.")
+                        st.session_state.step = 3
+                        st.experimental_set_query_params(step=3)
                     except Exception as e:
                         st.error(f"Erro ao carregar a base de dados: {e}")
                         logging.error(f"Erro ao carregar a base de dados: {e}")
-
-        if st.session_state.base_loaded:
-            st.success("Base de dados carregada com sucesso.")
-            if st.button('Next', key='next1'):
-                st.session_state.step = 3
-                st.experimental_set_query_params(step=3)
 
     elif option == "Fazer Upload de Base de Dados":
         uploaded_file_sgs = st.file_uploader('Upload do arquivo Excel SGS', type=['xlsx'], key='uploaded_file_sgs')
@@ -338,9 +331,8 @@ def select_database_page():
                     st.success("Arquivo Drawing Part List carregado com sucesso.")
 
         if 'sgs_df' in st.session_state and 'drawing_df' in st.session_state:
-            if st.button('Next', key='next2'):
-                st.session_state.step = 3
-                st.experimental_set_query_params(step=3)
+            st.session_state.step = 3
+            st.experimental_set_query_params(step=3)
 
 # Página de informações do cartão de trabalho
 def job_card_info_page():
@@ -367,9 +359,8 @@ def job_card_info_page():
                 st.session_state.area = area
                 st.session_state.spools = spools
                 st.success("Cartões de Trabalho criados com sucesso.")
-                if st.button('Next', key='next3'):
-                    st.session_state.step = 4
-                    st.experimental_set_query_params(step=4)
+                st.session_state.step = 4
+                st.experimental_set_query_params(step=4)
 
 # Página de download dos cartões de trabalho
 def download_page():
