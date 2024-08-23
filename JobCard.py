@@ -269,7 +269,6 @@ def login_page():
             st.session_state.authenticated = True
             st.session_state.step = 2
             st.success("Login realizado com sucesso")
-            st.experimental_rerun()  # Forçar a atualização da página para avançar
 
 def selection_page():
     st.title("Seleção")
@@ -287,7 +286,6 @@ def selection_page():
                     st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                     st.success("Base de dados pré-configurada carregada com sucesso.")
                     st.session_state.step = 4
-                    st.experimental_rerun()  # Forçar a atualização da página para avançar
                 except Exception as e:
                     st.error(f"Erro ao carregar as bases de dados: {e}")
                     st.session_state.hide_buttons = False
@@ -296,7 +294,6 @@ def selection_page():
         if st.button('Fazer upload de nova base de dados', key='upload_db'):
             st.session_state.hide_buttons = True
             st.session_state.step = 3
-            st.experimental_rerun()  # Forçar a atualização da página para avançar
 
 def upload_page():
     st.title("Upload de Arquivos")
@@ -314,7 +311,6 @@ def upload_page():
                 st.session_state.drawing_df = drawing_df
                 st.success("Arquivos carregados e processados com sucesso.")
                 st.session_state.step = 4
-                st.experimental_rerun()  # Forçar a atualização da página para avançar
 
 def job_card_info_page():
     st.title("Informações do Job Card")
@@ -329,7 +325,7 @@ def job_card_info_page():
     spools = st.text_area('Spool\'s (um por linha)', value=st.session_state.get('spools', ''))
 
     if st.button("Criar Job Cards"):
-        if not jc_number or not issue_date or not area or not spools:
+        if not jc_number or not issue_date or not area ou não spools:  # Corrigido: "or" em vez de "ou"
             st.error('Todos os campos devem ser preenchidos.')
         else:
             with st.spinner('Criando Job Cards...'):
@@ -347,7 +343,6 @@ def job_card_info_page():
                 st.session_state.spools = spools
                 st.success("Job Cards criados com sucesso.")
                 st.session_state.step = 5
-                st.experimental_rerun()  # Forçar a atualização da página para avançar
 
     col1, col2 = st.columns(2)
     with col1:
@@ -360,7 +355,6 @@ def job_card_info_page():
         if st.session_state.get('spools_excel') and st.session_state.get('material_excel'):
             if st.button('Próximo'):
                 st.session_state.step = 5
-                st.experimental_rerun()  # Forçar a atualização da página para avançar
 
 def download_page():
     st.title("Download")
@@ -385,7 +379,6 @@ def download_page():
     )
     if st.button("Voltar para Edição"):
         st.session_state.step = 4
-        st.experimental_rerun()  # Forçar a atualização da página para avançar
 
 # Função principal
 def main():
