@@ -8,23 +8,21 @@ import time
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
 
-# Função para carregar usuários e senhas
+# Função para carregar usuários
 def load_users():
-    users = {
-        st.secrets["USERNAME1"].lower(): st.secrets["PASSWORD1"],
-        st.secrets["USERNAME2"].lower(): st.secrets["PASSWORD2"],
-        st.secrets["USERNAME3"].lower(): st.secrets["PASSWORD3"],
-    }
-    logging.info(f"Loaded users: {list(users.keys())}")
+    users = [
+        st.secrets["USERNAME1"].lower(),
+        st.secrets["USERNAME2"].lower(),
+        st.secrets["USERNAME3"].lower(),
+    ]
+    logging.info(f"Loaded users: {users}")
     return users
 
-# Função de autenticação com senha
-def authenticate(username, password):
+# Função de autenticação sem senha
+def authenticate(username):
     users = load_users()
     logging.info(f"Authenticating username: {username}")
-    if username.lower() in users and users[username.lower()] == password:
-        return True
-    return False
+    return username.lower() in users
 
 # Função para processar o arquivo Excel
 def process_excel_data(uploaded_file, sheet_name='Spool', header=9):
@@ -247,18 +245,17 @@ class JobCardGenerator:
 def login_page():
     st.title('Job Card Generator - Login')
     username = st.text_input('Username', key='username')
-    password = st.text_input('Password', type='password', key='password')
     
     if st.button('Login'):
-        if authenticate(username, password):
+        if authenticate(username):
             st.session_state.authenticated = True
             st.session_state.step = 2
             st.experimental_set_query_params(step=2)
             st.success("Login successful")
             st.session_state.auth_error = None
         else:
-            st.session_state.auth_error = 'Invalid username or password'
-            st.error('Invalid username or password')
+            st.session_state.auth_error = 'Invalid username'
+            st.error('Invalid username')
 
 def selection_page():
     st.title('Job Card Generator')
