@@ -269,8 +269,7 @@ def login_page():
             st.session_state.authenticated = True
             st.session_state.step = 2
             st.success("Login realizado com sucesso")
-            time.sleep(1)  # Aguarde um momento para que o usuário veja a mensagem
-            st.experimental_rerun()  # Atualize a interface para a próxima etapa
+            # Transição automática para a próxima página
         else:
             st.session_state.auth_error = 'Usuário inválido'
             st.error('Usuário inválido')
@@ -291,8 +290,6 @@ def selection_page():
                     st.session_state.drawing_df = process_excel_data('DrawingPartList.xlsx', sheet_name='Sheet1', header=0)
                     st.success("Base de dados pré-configurada carregada com sucesso.")
                     st.session_state.step = 4
-                    time.sleep(1)
-                    st.experimental_rerun()
                 except Exception as e:
                     st.error(f"Erro ao carregar as bases de dados: {e}")
                     st.session_state.hide_buttons = False
@@ -301,7 +298,6 @@ def selection_page():
         if st.button('Fazer upload de nova base de dados', key='upload_db'):
             st.session_state.hide_buttons = True
             st.session_state.step = 3
-            st.experimental_rerun()
 
 def upload_page():
     st.title("Upload de Arquivos")
@@ -319,8 +315,6 @@ def upload_page():
                 st.session_state.drawing_df = drawing_df
                 st.success("Arquivos carregados e processados com sucesso.")
                 st.session_state.step = 4
-                time.sleep(1)
-                st.experimental_rerun()
 
 def job_card_info_page():
     st.title("Informações do Job Card")
@@ -353,8 +347,6 @@ def job_card_info_page():
                 st.session_state.spools = spools
                 st.success("Job Cards criados com sucesso.")
                 st.session_state.step = 5
-                time.sleep(1)
-                st.experimental_rerun()
 
     col1, col2 = st.columns(2)
     with col1:
@@ -367,7 +359,6 @@ def job_card_info_page():
         if st.session_state.get('spools_excel') and st.session_state.get('material_excel'):
             if st.button('Próximo'):
                 st.session_state.step = 5
-                st.experimental_rerun()
 
 def download_page():
     st.title("Download")
@@ -392,7 +383,6 @@ def download_page():
     )
     if st.button("Voltar para Edição"):
         st.session_state.step = 4
-        st.experimental_rerun()
 
 # Função principal
 def main():
@@ -413,19 +403,22 @@ def main():
         5: download_page,
     }
     
+    # Lógica para pular automaticamente para a página correta
+    current_step = st.session_state.step
+    if current_step in steps:
+        steps[current_step]()
+
     st.sidebar.title("Navegação")
     step_names = ["Login", "Seleção", "Upload de Arquivos", "Informações do Job Card", "Download"]
     st.sidebar.markdown("---")
     for i, name in enumerate(step_names, 1):
-        if i <= st.session_state.step:
+        if i <= current_step:
             if st.sidebar.button(name, key=f"step_{i}"):
                 st.session_state.step = i
                 st.experimental_set_query_params(step=i)
-
+    
     progress = st.sidebar.progress(0)
     progress.progress(st.session_state.step / len(steps))
-
-    steps[st.session_state.step]()
 
 if __name__ == "__main__":
     main()
