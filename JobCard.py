@@ -4,6 +4,7 @@ import xlsxwriter
 from io import BytesIO
 import logging
 import time
+from datetime import datetime
 
 # Configuração do logger
 logging.basicConfig(level=logging.INFO)
@@ -326,16 +327,19 @@ def job_card_info_page():
     st.subheader("Preencha as informações para criar os Job Cards")
     
     jc_number = st.text_input('JC Number', value=st.session_state.get('jc_number', ''))
-    issue_date = st.date_input('Issue Date', value=st.session_state.get('issue_date', pd.to_datetime('today')))
+    
+    # Exibir data no formato brasileiro
+    issue_date = st.date_input('Issue Date', value=st.session_state.get('issue_date', pd.to_datetime('today')), format="DD/MM/YYYY")
+    
     area = st.text_input('Area', value=st.session_state.get('area', ''))
     spools = st.text_area('Spool\'s (um por linha)', value=st.session_state.get('spools', ''))
 
     if st.button("Criar Job Cards"):
-        if not jc_number or not issue_date or not area ou não spools:
+        if not jc_number or not issue_date or not area or not spools:  # Corrigido: "or" em vez de "ou"
             st.error('Todos os campos devem ser preenchidos.')
         else:
             with st.spinner('Criando Job Cards...'):
-                formatted_issue_date = issue_date.strftime('%Y/%m/%d')
+                formatted_issue_date = issue_date.strftime('%d/%m/%Y')  # Formatação da data para DD/MM/YYYY
                 generator = JobCardGenerator(jc_number, formatted_issue_date, area, spools, st.session_state.sgs_df, st.session_state.drawing_df)
                 
                 spools_excel = generator.generate_spools_template()
