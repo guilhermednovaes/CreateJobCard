@@ -325,7 +325,7 @@ def job_card_info_page():
     spools = st.text_area('Spool\'s (um por linha)', value=st.session_state.get('spools', ''))
 
     if st.button("Criar Job Cards"):
-        if not jc_number or not issue_date or not area or não spools:  # Corrigido: "or" em vez de "ou"
+        if not jc_number or not issue_date or not area or not spools:  # Corrigido: "or" em vez de "ou"
             st.error('Todos os campos devem ser preenchidos.')
         else:
             with st.spinner('Criando Job Cards...'):
